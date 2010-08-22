@@ -25,6 +25,20 @@
  ******************************************************************************
  */
 
+/**
+ * Podcast Preparation Tool.
+ * 
+ * *PLEASE NOTE* This tool relies on the following external tools:
+ * 
+ * * eyeD3 from http://eyed3.nicfit.net/
+ *   eyeD3 is a python ID3 editing tool. You may also want to use the iTunes
+ *   compatibility patch from http://www.ben-xo.com/eyeD3/
+ *   
+ * * an external editor to do last minute tracklisting tidy-up. 
+ *   Defaults to vim
+ *  
+ */
+
 
 $serato_history_dir = '/Users/ben/Music/ScratchLive/History Export';
 $image_dir = '/Users/ben/Pictures';
@@ -37,7 +51,7 @@ $config = array(
         'date_offset' => 0
     ),
     'di.fm' => array(
-        'image' => false,
+        'image' => 'xpression-session-600.jpg',
         'album' => 'http://di.fm/electro',
         'genre' => 'Electro House',
         'date_offset' => 1
@@ -428,10 +442,8 @@ class SeratoCSVIterator implements Iterator
         $fh = fopen($filename, 'r');
         if(!$fh) 
             throw new InvalidArgumentException("Could not open file '$filename'");
-        
         fgetcsv($fh); // throw away header lines
         fgetcsv($fh);
-        
         while(!feof($fh))
         {
             $row = fgetcsv($fh);
@@ -551,19 +563,19 @@ class MP3File extends AFile
     {
         // NOTE: THIS ORDERING IS VERY SPECIFIC!
         $args = array (
-        	'eyed3',
+            'eyed3',
             '--to-v2.3', // this keeps iTunes and id3v2 happy.
             '--set-encoding=utf16-LE',
             '--itunes', // eyeD3 0.6.17 (latest at time of writing) needs the patch from http://www.ben-xo.com/eyeD3 for this
             '--year=' . $this->year,
             '--comment=::' . $this->tracklist->asText(),
             '--title=' . $this->title,
-        	'--artist=' . $this->artist,
+            '--artist=' . $this->artist,
             '--album=' . $this->album,
             '--genre=' . $this->genre
         );
         
-        if($this->image) $args[] = '--add-image=' . $this->image . ':OTHER';
+        //if($this->image) $args[] = '--add-image=' . $this->image . ':OTHER';
         
         $args[] = $this->getFilename();
         
@@ -579,6 +591,29 @@ class MP3File extends AFile
                 throw new RuntimeException('Call to eyeD3 to apply the tags failed');
             }
         }
+        
+        if($this->image)
+        {
+            // Now do the image as a second step, otherwise it seems to screw up and come up blank in iTunes :/
+            $args = array (
+                'eyed3',
+            	'--add-image=' . $this->image . ':OTHER',
+                $this->getFilename()
+            );
+            
+            if($debug)
+            {
+                print   (implode(' ', array_map('escapeshellarg', $args)));
+            }
+            else
+            {
+                passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
+                if(0 !== $retval)
+                {
+                    throw new RuntimeException('Call to eyeD3 to apply the image tag failed');
+                }
+            }
+        }    
     }
 }
 
