@@ -40,7 +40,7 @@
  */
 
 
-$serato_history_dir = '/Users/ben/Music/ScratchLive/History Export';
+$serato_history_dir = '/Users/ben/Music/_Serato_/History Export';
 $image_dir = '/Users/ben/Pictures';
 
 $config = array(
@@ -542,7 +542,7 @@ class MP3File extends AFile
     public function setArtistAndTitleFromFilename()
     {
         $filename = basename($this->getFilename());
-        if(preg_match('/^([^-]+)\s+-\s+([^-]+\s\(.+\))/', $filename, $matches))
+        if(preg_match('/^([^-]+)\s+-\s+(.+\s\(.+?\))/', $filename, $matches))
         {
             $this->artist = $matches[1];
             $this->title = $matches[2];
