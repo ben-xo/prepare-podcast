@@ -48,13 +48,19 @@ $config = array(
         'image' => 'xposure-show.jpg',
         'album' => 'http://www.bassdrive.com/',
         'genre' => 'Drum & Bass',
-        'date_offset' => 0
+        'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
+        'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPOSURE Show on http://www.bassdrive.com every Tuesday, 9-11pm GMT since 2001.",
+        'date_offset' => 0,
+        'mixcloud' => true
     ),
     'di.fm' => array(
         'image' => 'xpression-session-600.jpg',
         'album' => 'http://di.fm/electro',
         'genre' => 'Electro House',
-        'date_offset' => 1
+        'tags' => array('electro house', 'tech house', 'uk funky', 'electro', 'progressive house'),
+        'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPRESSION Session on http://di.fm/electro on the 1st and 3rd Tuesdays of the month, 5-7pm GMT since 2010.",
+        'date_offset' => 1,
+        'mixcloud' => true
     ),
 );
 
@@ -131,6 +137,19 @@ class PreparePodcast
                 $image_file = false;
             }
             
+            if($config[$show]['mixcloud'])
+            {
+                $mixcloud_json = file_get_contents(getenv('HOME') . '/.prepare-podcast-mixcloud.json');
+                if($mixcloud_json)
+                {
+                    $config[$show]['mixcloud'] = json_decode($mixcloud_json, true);
+                }
+                else
+                {
+                    throw RuntimeException('Mixcloud configuration missing');
+                }
+            }
+            
             $mp3_file = new MP3File($mp3_file_name);
             $mp3_file->setArtistAndTitleFromFilename();
             $mp3_file->setAlbum($config[$show]['album']);
@@ -161,6 +180,19 @@ class PreparePodcast
             $this->out("Writing info to file...\n");
             
             $mp3_file->applyID3();
+            
+            if($config[$show]['mixcloud'])
+            {
+                $mixcloud = new MixcloudClient(
+                    $config[$show]['mixcloud'], 
+                    $config[$show]['tags'], 
+                    $config[$show]['description'],
+                    $this->image_dir . '/' . $config[$show]['image']
+                );
+                $mixcloud->setMP3File($mp3_file);
+                $mixcloud->upload();
+            }
+            
         
         } catch(InvalidArgumentException $e) {
             $this->out( $e->getMessage() . "\n" );
@@ -221,6 +253,12 @@ class Track
         return $this->start_time;
     }
 
+    public function getStartTimeInSeconds()
+    {
+        $s = explode(':', $this->start_time);
+        return 3600 * $s[0] + 60 * $s[1] + $s[2];
+    }
+    
     public function asText($with_start_times = false)
     {
         if($with_start_times)
@@ -329,6 +367,14 @@ class Tracklist
     public function clear()
     {
         $this->tracks = array();
+    }
+    
+    /**
+     * @return array of Track
+     */
+    public function getTracks()
+    {
+        return $this->tracks;
     }
     
     public function asCue($filename)
@@ -478,7 +524,7 @@ class AFile extends SplFileInfo
      * @param $date_offset: number of days show was recorded prior to the date on the filename
      * @return DateTime
      */
-    public function guessDateFromFilename($date_offset)
+    public function guessDateFromFilename($date_offset=0)
     {
         if(!isset($this->date))
         {
@@ -533,10 +579,25 @@ class MP3File extends AFile
     public function setGenre($s) { $this->genre = $s; }
     public function setYear($s) { $this->year = $s; }
     public function setImage($s) { $this->image = $s; }
+
+    public function getArtist() { return $this->artist; }
+    public function getTitle() { return $this->title ; }
+    public function getAlbum() { return $this->album ; }
+    public function getGenre() { return $this->genre ; }
+    public function getYear() { return $this->year ; }
+    public function getImage() { return $this->image ; }
     
     public function setTracklist(Tracklist $t)
     {
         $this->tracklist = $t;
+    }
+    
+    /**
+     * @var Tracklist
+     */
+    public function getTracklist()
+    {
+        return $this->tracklist;
     }
         
     public function setArtistAndTitleFromFilename()
@@ -568,7 +629,7 @@ class MP3File extends AFile
             '--set-encoding=utf16-LE',
             '--itunes', // eyeD3 0.6.17 (latest at time of writing) needs the patch from http://www.ben-xo.com/eyeD3 for this
             '--year=' . $this->year,
-            '--comment=::' . $this->tracklist->asText(),
+            '--comment=::' . $this->tracklist->asText( Tracklist::ALL ),
             '--title=' . $this->title,
             '--artist=' . $this->artist,
             '--album=' . $this->album,
@@ -614,6 +675,93 @@ class MP3File extends AFile
                 }
             }
         }    
+    }
+}
+
+class MixcloudClient
+{
+    /**
+     * @var MP3File
+     */
+    protected $mp3_file;
+    
+    protected $access_token;
+    protected $tags;
+    protected $description;
+    protected $picture;
+    
+    public function __construct(array $config, array $tags, $description, $picture)
+    {
+        $this->access_token = $config['access_token'];
+        $this->tags = $tags;
+        $this->description = $description;
+        $this->picture = $picture;
+    }
+    
+    public function setMP3File(MP3File $mp3_file)
+    {
+        $this->mp3_file = $mp3_file;
+    }
+    
+    public function upload()
+    {
+        $fn = $this->mp3_file->getFilename();
+        
+        $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
+        $command = sprintf(
+        	'curl -v -# -F mp3=@%s -F picture=@%s -F "name="%s %s %s -F "percentage_music=95" -F "description="%s %s',
+        	escapeshellarg('112 ' . $fn),
+        	escapeshellarg($this->picture),
+        	escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
+        	$this->getTagsArgs(),
+        	$this->getTracklistArgs(),
+        	escapeshellarg($this->getDescription()),
+        	$url
+        );
+        
+        echo "***\n";
+        echo "re-encode with:\n\nlame --alt-preset 112 " . escapeshellarg($fn) . " " . escapeshellarg('112 ' . $fn) . "\n\n";
+        echo "upload with:\n\n". $command . "\n";
+    }
+    
+    public function getTagsArgs()
+    {
+        $args = '';
+        $i = 0;
+        foreach($this->tags as $tag)
+        {
+            $args .= '-F tags-' . $i . '-tag=' . escapeshellarg($tag) . ' ';
+            $i++; 
+        }
+        return $args;
+    }
+    
+    public function getTracklistArgs()
+    {
+        $args = '';
+        $tracks = $this->mp3_file->getTracklist()->getTracks();
+        $i = 0;
+        foreach($tracks as $track)
+        {
+            /* @var $track Track */
+            $args .= '-F sections-' . $i . '-artist=' . escapeshellarg($track->getArtist()) . ' ' . 
+                     '-F sections-' . $i . '-song=' . escapeshellarg($track->getTitle()) . ' ' .
+                     '-F sections-' . $i . '-start_time=' . escapeshellarg($track->getStartTimeInSeconds()) . ' '
+            ;
+            $i++;
+        }
+        return $args;
+    }
+    
+    public function getDescription()
+    {
+        $desc = $this->description;
+        $desc = str_replace(
+            array(':date:', ':artist:'), 
+            array( $this->mp3_file->guessDateFromFilename()->format('l jS F Y'), $this->mp3_file->getArtist() ), 
+            $desc
+        );
+        return $desc;
     }
 }
 
