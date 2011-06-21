@@ -689,9 +689,11 @@ class MixcloudClient
     protected $tags;
     protected $description;
     protected $picture;
+    protected $date_offset;
     
     public function __construct(array $config, array $tags, $description, $picture)
     {
+        $this->date_offset = $config['date_offset'];
         $this->access_token = $config['access_token'];
         $this->tags = $tags;
         $this->description = $description;
@@ -758,7 +760,7 @@ class MixcloudClient
         $desc = $this->description;
         $desc = str_replace(
             array(':date:', ':artist:'), 
-            array( $this->mp3_file->guessDateFromFilename()->format('l jS F Y'), $this->mp3_file->getArtist() ), 
+            array( $this->mp3_file->guessDateFromFilename($this->date_offset)->format('l jS F Y'), $this->mp3_file->getArtist() ), 
             $desc
         );
         return $desc;
