@@ -184,9 +184,7 @@ class PreparePodcast
             if($config[$show]['mixcloud'])
             {
                 $mixcloud = new MixcloudClient(
-                    $config[$show]['mixcloud'], 
-                    $config[$show]['tags'], 
-                    $config[$show]['description'],
+                    $config[$show],
                     $this->image_dir . '/' . $config[$show]['image']
                 );
                 $mixcloud->setMP3File($mp3_file);
@@ -691,12 +689,12 @@ class MixcloudClient
     protected $picture;
     protected $date_offset;
     
-    public function __construct(array $config, array $tags, $description, $picture)
+    public function __construct(array $config, $picture)
     {
         $this->date_offset = $config['date_offset'];
-        $this->access_token = $config['access_token'];
-        $this->tags = $tags;
-        $this->description = $description;
+        $this->access_token = $config['mixcloud']['access_token'];
+        $this->tags = $config['tags'];
+        $this->description = $config['description'];
         $this->picture = $picture;
     }
     
@@ -712,7 +710,7 @@ class MixcloudClient
         $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
         $command = sprintf(
         	'curl -v -# -F mp3=@%s -F picture=@%s -F "name="%s %s %s -F "percentage_music=95" -F "description="%s %s',
-        	escapeshellarg('112 ' . $fn),
+        	escapeshellarg($fn),
         	escapeshellarg($this->picture),
         	escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
         	$this->getTagsArgs(),
@@ -722,7 +720,6 @@ class MixcloudClient
         );
         
         echo "***\n";
-        echo "re-encode with:\n\nlame --alt-preset 112 " . escapeshellarg($fn) . " " . escapeshellarg('112 ' . $fn) . "\n\n";
         echo "upload with:\n\n". $command . "\n";
     }
     
