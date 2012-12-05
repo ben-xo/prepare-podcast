@@ -58,7 +58,7 @@ $config = array(
         'album' => 'http://di.fm/electro',
         'genre' => 'Electro House',
         'tags' => array('electro house', 'tech house', 'uk funky', 'electro', 'progressive house'),
-        'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPRESSION Session on http://di.fm/electro on the 1st and 3rd Tuesdays of the month, 5-7pm GMT since 2010.",
+        'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPRESSION Session on http://di.fm/electro on the 1st Tuesday of the month, 5-7pm GMT since 2010.",
         'date_offset' => 1,
         'mixcloud' => true
     ),
