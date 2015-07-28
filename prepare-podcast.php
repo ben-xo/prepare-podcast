@@ -715,7 +715,7 @@ class MixcloudClient
             escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
             $this->getTagsArgs(),
             $this->getTracklistArgs(),
-            escapeshellarg($this->getPublicDate()),
+            escapeshellarg($this->getPublishDate()),
             escapeshellarg($this->getDescription()),
             $url
         );
