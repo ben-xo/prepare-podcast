@@ -316,11 +316,11 @@ class Track
     }
         
     protected function normaliseTitle($t) {
-    	return preg_replace(
-    		array( '/ - (.+)$/', '/ \(Original Mix\)/i' ), 
-    		array( ' ($1)',      '' ), 
-    		$t
-    	);
+        return preg_replace(
+            array( '/ - (.+)$/', '/ \(Original Mix\)/i' ),
+            array( ' ($1)',      '' ),
+            $t
+        );
     }
 }
 
@@ -441,7 +441,7 @@ class SeratoCSVIterator implements Iterator
     protected $ptr = 0;
     
     /**
-	 * @return Track
+     * @return Track
      */
     public function current()
     {
@@ -622,7 +622,7 @@ class MP3File extends AFile
     {
         // NOTE: THIS ORDERING IS VERY SPECIFIC!
         $args = array (
-            'eyed3',
+            'eyed3_script',
             '--to-v2.3', // this keeps iTunes and id3v2 happy.
             '--set-encoding=utf16-LE',
             '--itunes', // eyeD3 0.6.17 (latest at time of writing) needs the patch from http://www.ben-xo.com/eyeD3 for this
@@ -655,8 +655,8 @@ class MP3File extends AFile
         {
             // Now do the image as a second step, otherwise it seems to screw up and come up blank in iTunes :/
             $args = array (
-                'eyed3',
-            	'--add-image=' . $this->image . ':OTHER',
+                'eyed3_script',
+                '--add-image=' . $this->image . ':OTHER',
                 $this->getFilename()
             );
             
@@ -709,14 +709,15 @@ class MixcloudClient
         
         $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
         $command = sprintf(
-        	'curl -v -# -F mp3=@%s -F picture=@%s -F "name="%s %s %s -F "percentage_music=95" -F "description="%s %s',
-        	escapeshellarg($fn),
-        	escapeshellarg($this->picture),
-        	escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
-        	$this->getTagsArgs(),
-        	$this->getTracklistArgs(),
-        	escapeshellarg($this->getDescription()),
-        	$url
+            'curl -v -# -F mp3=@%s -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s',
+            escapeshellarg($fn),
+            escapeshellarg($this->picture),
+            escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
+            $this->getTagsArgs(),
+            $this->getTracklistArgs(),
+            escapeshellarg($this->getPublicDate()),
+            escapeshellarg($this->getDescription()),
+            $url
         );
         
         echo "***\n";
@@ -762,6 +763,25 @@ class MixcloudClient
         );
         return $desc;
     }
+
+    public function getPublishDate()
+    {
+        // set to 9:00am the next morning
+        $now = new DateTime();
+        if($now->format('H') >= 9)
+        {
+            // assume we want to publish tomorrow
+            $publish_date = $now->modify("+1 days");
+        }
+        else
+        {
+            // up late publishing podcasts after midnight, are we?
+            $publish_date = $now;
+        }
+
+        return $publish_date->setTime(9, 0)->format('Y-m-d\TH:i:s\Z');
+    }
+
 }
 
 /*** App ***/
