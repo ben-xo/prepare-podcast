@@ -30,9 +30,10 @@
  * 
  * *PLEASE NOTE* This tool relies on the following external tools:
  * 
- * * eyeD3 from http://eyed3.nicfit.net/
- *   eyeD3 is a python ID3 editing tool. You may also want to use the iTunes
- *   compatibility patch from http://www.ben-xo.com/eyeD3/
+ * * eyeD3 0.6.18 from http://eyed3.nicfit.net/
+ *   (Right now it must be exactly that version. 0.7 and up don't work)
+ *
+ * * mp3splt from http://mp3splt.sourceforge.net/
  *   
  * * an external editor to do last minute tracklisting tidy-up. 
  *   Defaults to vim
@@ -176,9 +177,11 @@ class PreparePodcast
             
             $this->out("Type Ctrl-C now to break...\n");
             sleep(2);
-            
+
+            $this->out("Trimming silence...\n");
+            $mp3_file->trimSilence();
+
             $this->out("Writing info to file...\n");
-            
             $mp3_file->applyID3();
             
             if($config[$show]['mixcloud'])
@@ -617,6 +620,29 @@ class MP3File extends AFile
         $date = $this->guessDateFromFilename($date_offset);
         $this->setYear($date->format('Y'));
     }
+
+    public function trimSilence($debug=false)
+    {
+        $args = array(
+            'mp3splt',
+            '-r',
+            '-min=0.5',
+            $this->getFilename()
+        );
+
+        if($debug)
+        {
+            print   (implode(' ', array_map('escapeshellarg', $args)));
+        }
+        else
+        {
+            passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
+            if(0 !== $retval)
+            {
+                throw new RuntimeException('Call to mp3splt to trim file failed');
+            }
+        }
+    }
     
     public function applyID3($debug=false)
     {
@@ -625,7 +651,7 @@ class MP3File extends AFile
             'eyed3_script',
             '--to-v2.3', // this keeps iTunes and id3v2 happy.
             '--set-encoding=utf16-LE',
-            '--itunes', // eyeD3 0.6.17 (latest at time of writing) needs the patch from http://www.ben-xo.com/eyeD3 for this
+            '--itunes', // eyeD3 0.6.18 only (0.7 and above don't work with this script yet)
             '--year=' . $this->year,
             '--comment=::' . $this->tracklist->asText( Tracklist::ALL ),
             '--title=' . $this->title,
