@@ -626,6 +626,7 @@ class MP3File extends AFile
         $args = array(
             'mp3splt',
             '-r',
+            '-p',
             '-min=0.5',
             $this->getFilename()
         );
@@ -641,6 +642,9 @@ class MP3File extends AFile
             {
                 throw new RuntimeException('Call to mp3splt to trim file failed');
             }
+
+    		rename($this->getFilename(), $this->getBasename('.mp3') . '_untrimmed.mp3');
+    		rename($this->getBasename('.mp3') . '_trimmed.mp3', $this->getFilename());
         }
     }
     
