@@ -638,13 +638,13 @@ class MP3File extends AFile
         else
         {
             passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
-            if(0 !== $retval)
-            {
-                throw new RuntimeException('Call to mp3splt to trim file failed');
-            }
+            if(0 !== $retval) throw new RuntimeException('Call to mp3splt to trim file failed');
 
-    		rename($this->getFilename(), $this->getBasename('.mp3') . '_untrimmed.mp3');
-    		rename($this->getBasename('.mp3') . '_trimmed.mp3', $this->getFilename());
+            $retval = unlink($this->getFilename());
+            if(false === $retval) throw new RuntimeException('Delete untrimmed file failed');
+
+            $retval = rename($this->getBasename('.mp3') . '_trimmed.mp3', $this->getFilename());
+            if(false === $retval) throw new RuntimeException('Renaming trimmed file failed');
         }
     }
     
@@ -739,7 +739,7 @@ class MixcloudClient
         
         $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
         $command = sprintf(
-            'curl -v -# -F mp3=@%s -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s',
+            'curl -v -# -F mp3=@%s -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
             escapeshellarg($fn),
             escapeshellarg($this->picture),
             escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
