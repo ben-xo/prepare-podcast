@@ -439,6 +439,9 @@ class Tracklist
 
 class SeratoCSVIterator implements Iterator
 {
+    // map of column field names to column numbers
+    protected $column_field = array ();
+
     protected $rows = array();
     protected $base_timestamp;
     protected $ptr = 0;
@@ -450,8 +453,8 @@ class SeratoCSVIterator implements Iterator
     {
         $row = $this->rows[$this->ptr];
         $t = new Track();
-        $t->setTitle($row[0]);
-        $t->setArtist($row[1]);
+        $t->setTitle($row[$this->column_field['name']]);
+        $t->setArtist($row[$this->column_field['artist']]);
         $t->setStartTime( $this->getRelativeStartTime() );
         return $t;
     }
@@ -489,7 +492,9 @@ class SeratoCSVIterator implements Iterator
         $fh = fopen($filename, 'r');
         if(!$fh) 
             throw new InvalidArgumentException("Could not open file '$filename'");
-        fgetcsv($fh); // throw away header lines
+
+        $this->configureFromHeader(fgetcsv($fh));
+
         fgetcsv($fh);
         while(!feof($fh))
         {
@@ -502,7 +507,8 @@ class SeratoCSVIterator implements Iterator
     
     protected function getRelativeStartTime()
     {
-        $time = new PodcastDateTime($this->rows[$this->ptr][2]);
+        $row = $this->rows[$this->ptr];
+        $time = new PodcastDateTime($row[$this->column_field['start time']]);
         
         if($this->ptr == 0) 
         {
@@ -512,6 +518,22 @@ class SeratoCSVIterator implements Iterator
         
         $duration = new PodcastDateTime('@' . ($time->getTimestamp() - $this->base_timestamp) );
         return $duration->format('H:i:s');
+    }
+
+    protected function configureFromHeader($header_row)
+    {
+        foreach($header_row as $column => $header_field_name)
+        {
+            $this->column_field[$header_field_name] = $column;
+        }
+
+        foreach(array('name', 'artist', 'start time') as $column_name)
+        {
+            if(!isset($this->column_field[$column_name]))
+            {
+                throw new RuntimeException("No column '$column_name' found in header!");
+            }
+        }
     }
 }
 
