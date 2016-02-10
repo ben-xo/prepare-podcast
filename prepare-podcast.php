@@ -303,6 +303,14 @@ class Track
         
         $this->start_time = $st;
     }
+
+    public function adjustTimeTo($base_time)
+    {
+        $adj_time = new PodcastDateTime($base_time);
+        $old_time = new PodcastDateTime($this->start_time);
+        $new_time = new PodcastDateTime('@' . ($old_time->getTimestamp() - $adj_time->getTimestamp()) );
+        $this->start_time = $new_time->format('H:i:s');
+    }
     
     public function fromText($text)
     {
@@ -409,6 +417,17 @@ class Tracklist
             $track->fromText($row);
             $tracks[] = $track;
         }
+
+        if(!empty($tracks))
+        {
+            // First time might not start at 0; adjust all times as if it does
+            $base_time = $tracks[0]->getStartTime();
+            foreach($tracks as $track)
+            {
+                $track->adjustTimeTo($base_time);
+            }
+        }
+
         $this->tracks = $tracks;
     }
     
