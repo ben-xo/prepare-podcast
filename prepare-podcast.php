@@ -168,7 +168,7 @@ class PreparePodcast
             }
             
             $tracklist = new Tracklist();
-            $tracklist->fromSeratoCSV($serato_history_file_name);
+            $tracklist->fromIterator(new SeratoCSVIterator($serato_history_file_name));
             
             // allow last minute tidying of tracklist with vim
             $tracklist->editWithEditor();
@@ -431,10 +431,10 @@ class Tracklist
         $this->tracks = $tracks;
     }
     
-    public function fromSeratoCSV($filename)
+    public function fromIterator($iterator)
     {
         $tracks = array();
-        foreach(new SeratoCSVIterator($filename) as $track)
+        foreach($iterator as $track)
         {
             $tracks[] = $track;
         }
