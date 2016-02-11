@@ -446,7 +446,7 @@ class Tracklist
         $this->tracks = $tracks;
     }
     
-    public function fromIterator($iterator)
+    public function fromIterator(Iterator $iterator)
     {
         $tracks = array();
         foreach($iterator as $track)
