@@ -65,6 +65,14 @@ $config = array(
     ),
 );
 
+/*** Interfaces **/
+
+interface Editable
+{
+    public function asText();
+    public function fromText($text);
+}
+
 /*** Classes ***/
 
 if(version_compare(PHP_VERSION, '5.3.0') >= 0) 
@@ -341,7 +349,7 @@ class Track
  * You only need to use setArtist() and setTitle() if you want to convert the Tracklist
  * to a cue sheet with asCue().
  */
-class Tracklist
+class Tracklist implements Editable
 {
     const POSITION = 1;
     const START_TIME = 2;
