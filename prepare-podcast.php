@@ -241,7 +241,7 @@ class PreparePodcast
     }
 }
 
-class Track
+class Track implements Editable
 {
     protected $start_time, $artist, $title;
     
@@ -268,23 +268,13 @@ class Track
         return 3600 * $s[0] + 60 * $s[1] + $s[2];
     }
     
-    public function asText($with_start_times = false)
+    public function asText()
     {
-        if($with_start_times)
-        {
-            return sprintf("%s - %s - %s", 
-                $this->getStartTime(), 
-                $this->getArtist(), 
-                $this->getTitle()
-            );
-        }
-        else
-        {
-            return sprintf("%s - %s",
-                $this->getArtist(), 
-                $this->getTitle()
-            );            
-        }
+        return sprintf("%s - %s - %s",
+            $this->getStartTime(),
+            $this->getArtist(),
+            $this->getTitle()
+        );
     }
     
     public function __toString()
@@ -399,15 +389,15 @@ class Tracklist implements Editable
         
     }
     
-    public function asText($flags = self::POSITION)
+    public function asText()
     {
         $string = '';
         $row = 1;
         foreach($this->tracks as $track)
         {
             $line = '';
-            if($flags & self::POSITION) $line .= sprintf("%02d - ", $row);   
-            $line .= $track->asText($flags & self::START_TIME);
+            $line .= sprintf("%02d - ", $row);
+            $line .= $track->asText();
             $string .= $line . "\n";
             $row++;
         }
