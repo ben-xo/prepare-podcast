@@ -341,10 +341,6 @@ class Track implements Editable
  */
 class Tracklist implements Editable
 {
-    const POSITION = 1;
-    const START_TIME = 2;
-    const ALL = 3;
-    
     /** @var array of Track */
     protected $tracks = array();
     
@@ -447,7 +443,7 @@ class Tracklist implements Editable
     function editWithEditor($editor_cmd='vim') 
     {
         $tempfile = tempnam('', 'podcast');
-        file_put_contents($tempfile, $this->asText( Tracklist::ALL ));
+        file_put_contents($tempfile, $this->asText());
         passthru(escapeshellarg($editor_cmd) . ' 2>/dev/null ' . escapeshellarg($tempfile));
         $this->fromText( file_get_contents($tempfile) );
         unlink($tempfile);
@@ -696,7 +692,7 @@ class MP3File extends AFile
             '--set-encoding=utf16-LE',
             '--itunes', // eyeD3 0.6.18 only (0.7 and above don't work with this script yet)
             '--year=' . $this->year,
-            '--comment=::' . $this->tracklist->asText( Tracklist::ALL ),
+            '--comment=::' . $this->tracklist->asText(),
             '--title=' . $this->title,
             '--artist=' . $this->artist,
             '--album=' . $this->album,
