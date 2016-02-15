@@ -90,6 +90,18 @@ else
     }
 }
 
+class PPError
+{
+    const MISSING_ARG_NO_SHOW = -100;
+    const MISSING_ARG_NO_MP3  = -101;
+    const NO_SHOWS_CONFIGURED = -102;
+    const SHOW_NOT_CONFIGURED = -103;
+    const NO_IMAGE_CONFIGURED = -104;
+    const IMAGE_NOT_FOUND     = -105;
+    const IMAGE_UNREADABLE    = -106;
+    const NO_IMAGE_DIR_CONFIG = -107;
+}
+
 class PreparePodcast
 {
     protected $config, $serato_history_dir, $image_dir;
@@ -109,6 +121,104 @@ class PreparePodcast
     public function main($argc, array $argv)
     {
         date_default_timezone_set('UTC');
+
+        $handlers = array(
+            'mp3file'           => new MP3FileHandler(),
+            'serato'            => new SeratoHandler(),
+            'coverimage'        => new CoverImageHandler(),
+            'mixcloud'          => new MixcloudHandler(),
+        );
+
+        try {
+
+            if(empty($argv[1])) 
+                throw new InvalidArgumentException('No show specified.', PPError::MISSING_ARG_NO_SHOW);
+
+            if(empty($argv[2])) 
+                throw new InvalidArgumentException('No MP3 specified.', PPError::MISSING_ARG_NO_MP3);
+
+            $show_setting_name  = $argv[1];
+            $mp3_file_name      = $argv[2];
+
+            $config  = $this->getShowConfig($show_setting_name);
+
+            $mp3file = $this->tagMP3(
+                $mp3_file_name, 
+                $config['album'], 
+                $config['genre'], 
+                $this->getImageFileName()
+            );
+
+            foreach($handlers as $handler)
+                $handler->configure($config);
+
+
+        } catch(InvalidArgumentException $e) {
+            $this->out( $e->getMessage() . "\n" );
+            $this->usage(basename($argv[0]));
+        } catch(Exception $e) {
+            $this->out( $e->getMessage() . "\n" );
+        }
+        
+        if(isset($e)) exit($e->getCode());
+
+    }
+
+    protected function getShowConfig($show_name)
+    {
+        if(empty($this->config['shows']))
+            throw new RuntimeException('No shows configured.', PPError::NO_SHOWS_CONFIGURED);
+
+        if(empty($this->config['shows'][$show_name]))
+        {
+            throw new InvalidArgumentException(
+                sprintf('Unknown show \'%s\'. Only know about %s', $show_name, implode(', ', array_keys($config['shows']))), 
+                PPError::SHOW_NOT_CONFIGURED
+            );
+        }
+
+        return $this->config['shows'][$show_name];
+    }
+
+    protected function tagMP3($mp3_file_name, $album, $genre, $image_file_name)
+    {
+        $mp3_file = new MP3File($mp3_file_name);
+        $mp3_file->setArtistAndTitleFromFilename();
+        $mp3_file->setAlbum($album);
+        $mp3_file->setGenre($genre);
+        $mp3_file->setImage($image_file_name);
+
+        $date = $mp3_file->guessDateFromFilename($config[$show]['date_offset']);
+        $mp3_file->setYear($date->format('Y'));
+        
+        return $mp3_file;
+    }
+
+    protected function getImageFileName($config)
+    {
+        if(!isset($config['image']))
+            throw new RuntimeException('Image not configured. Must be a filename or false.', PPError::NO_IMAGE_CONFIGURED);
+
+        // config says: I don't want an image.
+        if($config['image'] === false)
+            return false;
+
+        if(!isset($config['image_dir']))
+            throw new RuntimeException('Image directory not configured.', PPError::NO_IMAGE_DIR_CONFIG);
+
+        $image_file_name = $config['image_dir'] . DIRECTORY_SEPARATOR . $config[$show]['image'];
+
+        if(!is_file($image_file_name))
+            throw new RuntimeException(sprintf("No such file '%s'", $image_file_name), PPError::IMAGE_NOT_FOUND);
+
+        if(!is_readable($image_file_name))
+            throw new RuntimeException(sprintf("Can't read image file '%s'", $image_file_name), PPError::IMAGE_UNREADABLE);
+
+        return $image_file_name;
+    }
+
+    public function old_main($argc, array $argv)
+    {
         
         $config = $this->config;
         $serato_history_dir = $this->serato_history_dir;
