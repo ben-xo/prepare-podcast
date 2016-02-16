@@ -92,14 +92,31 @@ else
 
 class PPError
 {
-    const MISSING_ARG_NO_SHOW = -100;
-    const MISSING_ARG_NO_MP3  = -101;
-    const NO_SHOWS_CONFIGURED = -102;
-    const SHOW_NOT_CONFIGURED = -103;
-    const NO_IMAGE_CONFIGURED = -104;
-    const IMAGE_NOT_FOUND     = -105;
-    const IMAGE_UNREADABLE    = -106;
-    const NO_IMAGE_DIR_CONFIG = -107;
+    const MISSING_ARG_NO_SHOW    = -100;
+    const MISSING_ARG_NO_MP3     = -101;
+    const NO_SHOWS_CONFIGURED    = -102;
+    const SHOW_NOT_CONFIGURED    = -103;
+    const NO_IMAGE_CONFIGURED    = -104;
+    const IMAGE_NOT_FOUND        = -105;
+    const IMAGE_UNREADABLE       = -106;
+    const NO_IMAGE_DIR_CONFIG    = -107;
+    const NO_ALBUM_CONFIGURED    = -108;
+    const NO_GENRE_CONFIGURED    = -109;
+    const NO_SERATO_DIR_DETECT   = -110;
+    const SERATO_DIR_NOT_FOUND   = -111;
+    const SERATO_DIR_UNREADABLE  = -112;
+    const RECENT_FILE_NOT_FOUND  = -113;
+    const MP3TRIM_FAILED         = -114;
+    const TRIM_RENAME_FAILED     = -115;
+    const TRIM_DELETE_FAILED     = -116;
+    const TRACKLIST_FORMAT       = -117;
+    const TRACK_STARTIME_FORMAT  = -118;
+    const SERATO_CSV_OPEN_FAILED = -119;
+    const SERATO_CSV_MISSING_COL = -120;
+    const GUESS_DATE_FAILED      = -121;
+    const SET_ARTIST_TITLE_FAIL  = -122;
+    const EYED3_TAG_FAILED       = -123;
+    const EYED3_IMAGE_FAILED     = -124;
 }
 
 class PreparePodcast
@@ -122,44 +139,57 @@ class PreparePodcast
     {
         date_default_timezone_set('UTC');
 
-        $handlers = array(
-            'mp3file'           => new MP3FileHandler(),
-            'serato'            => new SeratoHandler(),
-            'coverimage'        => new CoverImageHandler(),
-            'mixcloud'          => new MixcloudHandler(),
-        );
-
         try {
 
-            if(empty($argv[1])) 
+            if(empty($argv[1]))
                 throw new InvalidArgumentException('No show specified.', PPError::MISSING_ARG_NO_SHOW);
 
-            if(empty($argv[2])) 
+            if(empty($argv[2]))
                 throw new InvalidArgumentException('No MP3 specified.', PPError::MISSING_ARG_NO_MP3);
 
             $show_setting_name  = $argv[1];
             $mp3_file_name      = $argv[2];
 
-            $config  = $this->getShowConfig($show_setting_name);
+            $config = $this->getShowConfig($show_setting_name);
 
-            $mp3file = $this->tagMP3(
-                $mp3_file_name, 
-                $config['album'], 
-                $config['genre'], 
-                $this->getImageFileName()
-            );
+            $image_file_name = $this->getImageFileName($config);
+            $mp3file = $this->tagMP3($mp3_file_name, $image_file_name, $config);
 
-            foreach($handlers as $handler)
-                $handler->configure($config);
+            // we need the date for the tracklist search too
+            $date_offset = isset($config['date_offset']) ? $config['date_offset'] : 0;
+            $date = $mp3_file->guessDateFromFilename($date_offset);
+            $mp3_file->setYear($date->format('Y'));
 
+            $tracklist = $this->getTracklistFromSeratoCSV($date, $config);
 
+            // allow last minute tidying of tracklist with vim
+            $tracklist->editWithEditor();
+            
+            $mp3_file->setTracklist($tracklist);
+            
+            $this->out("Type Ctrl-C now to break...\n");
+            sleep(2);
+
+            $this->out("Trimming silence...\n");
+            $mp3_file->trimSilence();
+
+            $this->out("Writing ID3 info to file...\n");
+            $mp3_file->applyID3();
+
+            if($config[$show]['mixcloud'])
+            {
+                $mixcloud = new MixcloudClient($config, $image_file_name);
+                $mixcloud->setMP3File($mp3_file);
+                $mixcloud->upload();
+            }
+            
         } catch(InvalidArgumentException $e) {
             $this->out( $e->getMessage() . "\n" );
             $this->usage(basename($argv[0]));
         } catch(Exception $e) {
             $this->out( $e->getMessage() . "\n" );
         }
-        
+
         if(isset($e)) exit($e->getCode());
 
     }
@@ -180,17 +210,30 @@ class PreparePodcast
         return $this->config['shows'][$show_name];
     }
 
-    protected function tagMP3($mp3_file_name, $album, $genre, $image_file_name)
+    protected function tagMP3($mp3_file_name, $image_file_name, $config)
     {
+        if(empty($config['album']))
+        {
+            throw new RuntimeException(
+                "No 'album' configured for podcast. (Suggest a Podcast name or URL.)", 
+                PPError::NO_ALBUM_CONFIGURED
+            );
+        }
+
+        if(empty($config['genre']))
+        {
+            throw new RuntimeException(
+                "No 'genre' configured for podcast.", 
+                PPError::NO_GENRE_CONFIGURED
+            );
+        }
+
         $mp3_file = new MP3File($mp3_file_name);
         $mp3_file->setArtistAndTitleFromFilename();
-        $mp3_file->setAlbum($album);
-        $mp3_file->setGenre($genre);
+        $mp3_file->setAlbum($config['album']);
+        $mp3_file->setGenre($config['genre']);
         $mp3_file->setImage($image_file_name);
 
-        $date = $mp3_file->guessDateFromFilename($config[$show]['date_offset']);
-        $mp3_file->setYear($date->format('Y'));
-        
         return $mp3_file;
     }
 
@@ -212,115 +255,83 @@ class PreparePodcast
             throw new RuntimeException(sprintf("No such file '%s'", $image_file_name), PPError::IMAGE_NOT_FOUND);
 
         if(!is_readable($image_file_name))
-            throw new RuntimeException(sprintf("Can't read image file '%s'", $image_file_name), PPError::IMAGE_UNREADABLE);
+        {
+            throw new RuntimeException(
+                sprintf("Can't read image file '%s' (permissions?)", $image_file_name), 
+                PPError::IMAGE_UNREADABLE
+            );
+        }
 
         return $image_file_name;
     }
 
-    public function old_main($argc, array $argv)
+    protected function getTracklistFromSeratoCSV(DateTime $date, array $config)
     {
-        
-        $config = $this->config;
-        $serato_history_dir = $this->serato_history_dir;
-        $image_dir = $this->image_dir;
-        
-        try {
-        
-            if(!is_dir($serato_history_dir) || !is_readable($serato_history_dir))
-                throw new RuntimeException('Serato History dir not set correctly in ' . $argv[0]);
-            
-            if(!is_dir($image_dir) || !is_readable($image_dir))
-                throw new RuntimeException('Image dir not set correctly in ' . $argv[0]);
-                        
-            if(empty($argv[1])) 
-                throw new InvalidArgumentException('No show specified.');
-                
-            $show = $argv[1];
-            if(!isset($config[$show]))
-                throw new InvalidArgumentException('Unknown show \'' . $show . '\'. Only know about ' . implode(', ', array_keys($config)));
-                
-            if(empty($argv[2])) 
-                throw new InvalidArgumentException('No MP3 specified.');
-                
-            $mp3_file_name = $argv[2];
-            
-            if($config[$show]['image'] !== false)
-            {
-                $image_file = $image_dir . '/' . $config[$show]['image'];
-        
-                if(!is_file($image_file) || !is_readable($image_file))
-                    throw new RuntimeException('Can\'t read image file ' . $image_file);
-            }
-            else
-            {
-                $image_file = false;
-            }
-            
-            if($config[$show]['mixcloud'])
-            {
-                $mixcloud_json = file_get_contents(getenv('HOME') . '/.prepare-podcast-mixcloud.json');
-                if($mixcloud_json)
-                {
-                    $config[$show]['mixcloud'] = json_decode($mixcloud_json, true);
-                }
-                else
-                {
-                    throw RuntimeException('Mixcloud configuration missing');
-                }
-            }
-            
-            $mp3_file = new MP3File($mp3_file_name);
-            $mp3_file->setArtistAndTitleFromFilename();
-            $mp3_file->setAlbum($config[$show]['album']);
-            $mp3_file->setGenre($config[$show]['genre']);
-            $mp3_file->setImage($image_file);
-            
-            $date = $mp3_file->guessDateFromFilename($config[$show]['date_offset']);
-            $mp3_file->setYear($date->format('Y'));
-            
-            $serato_history_file_name = $serato_history_dir . '/' . $date->format('d-m-Y') . '.csv';
-            if(!file_exists($serato_history_file_name)) 
-            {
-                $this->out("Didn't find history file for date {$date->format('Y-m-d')}, looking for newest history file...\n");
-                $serato_history_file_name = $this->getMostRecentFile($serato_history_dir, 'csv');
-            }
-            
-            $tracklist = new Tracklist();
-            $tracklist->fromIterator(new SeratoCSVIterator($serato_history_file_name));
-            
-            // allow last minute tidying of tracklist with vim
-            $tracklist->editWithEditor();
-            
-            $mp3_file->setTracklist($tracklist);
-            
-            $this->out("Type Ctrl-C now to break...\n");
-            sleep(2);
+        if(isset($config['serato_history_dir']))
+        {
+            $serato_history_dir = $config['serato_history_dir'];
 
-            $this->out("Trimming silence...\n");
-            $mp3_file->trimSilence();
-
-            $this->out("Writing info to file...\n");
-            $mp3_file->applyID3();
-            
-            if($config[$show]['mixcloud'])
+            if(!is_dir($serato_history_dir))
             {
-                $mixcloud = new MixcloudClient(
-                    $config[$show],
-                    $this->image_dir . '/' . $config[$show]['image']
+                throw new RuntimeException(
+                    sprintf("No such serato history export dir '%s'", $serato_history_dir), 
+                    PPError::SERATO_DIR_NOT_FOUND
                 );
-                $mixcloud->setMP3File($mp3_file);
-                $mixcloud->upload();
             }
-            
-        
-        } catch(InvalidArgumentException $e) {
-            $this->out( $e->getMessage() . "\n" );
-            $this->usage(basename($argv[0]));
-        } catch(Exception $e) {
-            $this->out( $e->getMessage() . "\n" );
+
+            if(!is_readable($serato_history_dir))
+            {
+                throw new RuntimeException(
+                    sprintf("Can't read from Serato history export dir '%s' (permissions?)", $serato_history_dir), 
+                    PPError::SERATO_DIR_UNREADABLE
+                );
+            }
         }
+        else
+        {
+            $serato_history_dir = $this->getDefaultSeratoHistoryDir();
+        }
+
+        $serato_history_file_name = $serato_history_dir . DIRECTORY_SEPARATOR . $date->format('d-m-Y') . '.csv';
+        if(!file_exists($serato_history_file_name)) 
+        {
+            $this->out("Didn't find history file for date {$date->format('Y-m-d')}, looking for newest history file...\n");
+            $serato_history_file_name = $this->getMostRecentFile($serato_history_dir, 'csv');
+        }
+
+        $tracklist = new Tracklist();
+        $tracklist->fromIterator(new SeratoCSVIterator($serato_history_file_name));
+
+        return $tracklist;
+    }
+
+    protected function getDefaultSeratoHistoryDir()
+    {
+        // OSX
+        $dir = getenv('HOME') . '/Music/ScratchLIVE/History Export';
+        if(is_dir($dir) && is_readable($dir)) return $dir;
+
+        $dir = getenv('HOME') . '/Music/_Serato_/History Export';
+        if(is_dir($dir) && is_readable($dir)) return $dir;
         
-        if(isset($e)) exit(-1);
+        // Windows Vista / Windows 7 ?
+        $dir = getenv('USERPROFILE') . '\Music\ScratchLIVE\History Export';
+        if(is_dir($dir) && is_readable($dir)) return $dir;
+
+        $dir = getenv('USERPROFILE') . '\Music\_Serato_\History Export';
+        if(is_dir($dir) && is_readable($dir)) return $dir;
+        
+        // Windows XP
+        $dir = getenv('USERPROFILE') . '\My Documents\My Music\ScratchLIVE\History Export';
+        if(is_dir($dir) && is_readable($dir)) return $dir;
+
+        $dir = getenv('USERPROFILE') . '\My Documents\My Music\_Serato_\History Export';
+        if(is_dir($dir) && is_readable($dir)) return $dir;
+        
+        throw new RuntimeException(
+            "Could not find your Serato 'History Export' folder. Please configure it manually.", 
+            PPError::NO_SERATO_DIR_DETECT
+        );
     }
     
     protected function usage($cmd)
@@ -347,7 +358,11 @@ class PreparePodcast
             }
         }
         if($fp) return $fp;
-        throw new RuntimeException("No $type file found in $from_dir");
+
+        throw new RuntimeException(
+            sprintf("No %s file found in %s", $type, $from_dir), 
+            PPError::RECENT_FILE_NOT_FOUND
+        );
     }
 }
 
@@ -407,7 +422,7 @@ class Track implements Editable
     public function setStartTime($st)
     {
         if(!preg_match('/^\d{2,}:[0-5]\d:[0-5]\d$/', $st))
-            throw new InvalidArgumentException("Didn't understand the start-time '$st'");
+            throw new InvalidArgumentException("Didn't understand the start-time '$st'", PPError::TRACK_STARTIME_FORMAT);
         
         $this->start_time = $st;
     }
@@ -430,7 +445,7 @@ class Track implements Editable
         }
         else
         {
-            throw new InvalidArgumentException("Could not parse track '$text'");
+            throw new InvalidArgumentException("Could not parse track '$text'", PPError::TRACKLIST_FORMAT);
         }
     }
         
@@ -614,7 +629,7 @@ class SeratoCSVIterator implements Iterator
     {
         $fh = fopen($filename, 'r');
         if(!$fh) 
-            throw new InvalidArgumentException("Could not open file '$filename'");
+            throw new InvalidArgumentException("Could not open file '$filename'", PPError::SERATO_CSV_OPEN_FAILED);
 
         $this->configureFromHeader(fgetcsv($fh));
 
@@ -654,7 +669,7 @@ class SeratoCSVIterator implements Iterator
         {
             if(!isset($this->column_field[$column_name]))
             {
-                throw new RuntimeException("No column '$column_name' found in header!");
+                throw new RuntimeException("No column '$column_name' found in header!", PPError::SERATO_CSV_MISSING_COL);
             }
         }
     }
@@ -697,7 +712,7 @@ class AFile extends SplFileInfo
             
             else
             {
-                throw new RuntimeException("Could not parse date from '$filename'");
+                throw new RuntimeException("Could not parse date from '$filename'", PPError::GUESS_DATE_FAILED);
             }
             
             if($date_offset)
@@ -756,7 +771,7 @@ class MP3File extends AFile
         }
         else
         {
-            throw new RuntimeException("Could not parse artist and title from '$filename'");
+            throw new RuntimeException("Could not parse artist and title from '$filename'", PPError::SET_ARTIST_TITLE_FAIL);
         }
     }
     
@@ -783,13 +798,13 @@ class MP3File extends AFile
         else
         {
             passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
-            if(0 !== $retval) throw new RuntimeException('Call to mp3splt to trim file failed');
+            if(0 !== $retval) throw new RuntimeException('Call to mp3splt to trim file failed', PPError::MP3TRIM_FAILED);
 
             $retval = unlink($this->getFilename());
-            if(false === $retval) throw new RuntimeException('Delete untrimmed file failed');
+            if(false === $retval) throw new RuntimeException('Delete untrimmed file failed', PPError::TRIM_DELETE_FAILED);
 
             $retval = rename($this->getBasename('.mp3') . '_trimmed.mp3', $this->getFilename());
-            if(false === $retval) throw new RuntimeException('Renaming trimmed file failed');
+            if(false === $retval) throw new RuntimeException('Renaming trimmed file failed', PPError::TRIM_RENAME_FAILED);
         }
     }
     
@@ -822,7 +837,7 @@ class MP3File extends AFile
             passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
             if(0 !== $retval)
             {
-                throw new RuntimeException('Call to eyeD3 to apply the tags failed');
+                throw new RuntimeException('Call to eyeD3 to apply the tags failed', PPError::EYED3_TAG_FAILED);
             }
         }
         
@@ -844,7 +859,7 @@ class MP3File extends AFile
                 passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
                 if(0 !== $retval)
                 {
-                    throw new RuntimeException('Call to eyeD3 to apply the image tag failed');
+                    throw new RuntimeException('Call to eyeD3 to apply the image tag failed', PPError::EYED3_IMAGE_FAILED);
                 }
             }
         }    
