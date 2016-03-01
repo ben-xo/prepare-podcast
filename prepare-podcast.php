@@ -40,28 +40,27 @@
  *  
  */
 
-
-$serato_history_dir = '/Users/ben/Music/_Serato_/History Export';
-$image_dir = '/Users/ben/Pictures';
-
 $config = array(
-    'bassdrive' => array(
-        'image' => 'xposure-show.jpg',
-        'album' => 'http://www.bassdrive.com/',
-        'genre' => 'Drum & Bass',
-        'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
-        'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPOSURE Show on http://www.bassdrive.com every Tuesday, 9-11pm GMT since 2001.",
-        'date_offset' => 0,
-        'mixcloud' => true
-    ),
-    'di.fm' => array(
-        'image' => 'xpression-session-600.jpg',
-        'album' => 'http://di.fm/electro',
-        'genre' => 'Electro House',
-        'tags' => array('electro house', 'tech house', 'uk funky', 'electro', 'progressive house'),
-        'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPRESSION Session on http://di.fm/electro on the 1st Tuesday of the month, 5-7pm GMT since 2010.",
-        'date_offset' => 1,
-        'mixcloud' => true
+    'image_dir' => '/Users/ben/Pictures',
+    'shows' => array(
+        'bassdrive' => array(
+            'image' => 'xposure-show.jpg',
+            'album' => 'http://www.bassdrive.com/',
+            'genre' => 'Drum & Bass',
+            'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
+            'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPOSURE Show on http://www.bassdrive.com every Tuesday, 9-11pm GMT since 2001.",
+            'date_offset' => 0,
+            'mixcloud' => true
+        ),
+        'di.fm' => array(
+            'image' => 'xpression-session-600.jpg',
+            'album' => 'http://di.fm/electro',
+            'genre' => 'Electro House',
+            'tags' => array('electro house', 'tech house', 'uk funky', 'electro', 'progressive house'),
+            'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPRESSION Session on http://di.fm/electro on the 1st Tuesday of the month, 5-7pm GMT since 2010.",
+            'date_offset' => 1,
+            'mixcloud' => true
+        ),
     ),
 );
 
@@ -164,9 +163,9 @@ class PreparePodcast
 
             // allow last minute tidying of tracklist with vim
             $tracklist->editWithEditor();
-            
+
             $mp3_file->setTracklist($tracklist);
-            
+
             $this->out("Type Ctrl-C now to break...\n");
             sleep(2);
 
@@ -182,7 +181,7 @@ class PreparePodcast
                 $mixcloud->setMP3File($mp3_file);
                 $mixcloud->upload();
             }
-            
+
         } catch(InvalidArgumentException $e) {
             $this->out( $e->getMessage() . "\n" );
             $this->usage(basename($argv[0]));
@@ -215,7 +214,7 @@ class PreparePodcast
         if(empty($config['album']))
         {
             throw new RuntimeException(
-                "No 'album' configured for podcast. (Suggest a Podcast name or URL.)", 
+                "No 'album' configured for podcast. (Suggest a Podcast name or URL.)",
                 PPError::NO_ALBUM_CONFIGURED
             );
         }
@@ -223,7 +222,7 @@ class PreparePodcast
         if(empty($config['genre']))
         {
             throw new RuntimeException(
-                "No 'genre' configured for podcast.", 
+                "No 'genre' configured for podcast.",
                 PPError::NO_GENRE_CONFIGURED
             );
         }
@@ -257,7 +256,7 @@ class PreparePodcast
         if(!is_readable($image_file_name))
         {
             throw new RuntimeException(
-                sprintf("Can't read image file '%s' (permissions?)", $image_file_name), 
+                sprintf("Can't read image file '%s' (permissions?)", $image_file_name),
                 PPError::IMAGE_UNREADABLE
             );
         }
