@@ -105,13 +105,15 @@ class PreparePodcast
         $config = $this->config;
         $serato_history_dir = $this->serato_history_dir;
         $image_dir = $this->image_dir;
-
-        if(isset($argv[1]) and $argv[1] == '--renumber')
-        {
-            return $this->renumber();
-        }
         
         try {
+
+            if(isset($argv[1]) and $argv[1] == '--renumber')
+            {
+                return $this->renumber();
+            }
+
+            /** Normal mode **/
         
             if(!is_dir($serato_history_dir) || !is_readable($serato_history_dir))
                 throw new RuntimeException('Serato History dir not set correctly in ' . $argv[0]);
@@ -218,9 +220,9 @@ class PreparePodcast
 
     protected function renumber()
     {
-            $tracklist = new Tracklist();
-            $tracklist->editWithEditor();
-            echo $tracklist->asText(Tracklist::ALL);
+        $tracklist = new Tracklist();
+        $tracklist->editWithEditor();
+        echo $tracklist->asText(Tracklist::ALL);
     }
     
     protected function getMostRecentFile($from_dir, $type)
