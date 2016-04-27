@@ -222,7 +222,7 @@ class PreparePodcast
     {
         $tracklist = new Tracklist();
         $tracklist->editWithEditor();
-        echo $tracklist->asText(Tracklist::ALL);
+        $this->out($tracklist->asText(Tracklist::ALL));
     }
     
     protected function getMostRecentFile($from_dir, $type)
