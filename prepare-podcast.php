@@ -105,6 +105,11 @@ class PreparePodcast
         $config = $this->config;
         $serato_history_dir = $this->serato_history_dir;
         $image_dir = $this->image_dir;
+
+        if(isset($argv[1]) and $argv[1] == '--renumber')
+        {
+            return $this->renumber();
+        }
         
         try {
         
@@ -208,6 +213,14 @@ class PreparePodcast
     protected function usage($cmd)
     {
         $this->out( "Usage: $cmd <show> <filename>\n" );
+        $this->out( "       $cmd --renumber\n" );
+    }
+
+    protected function renumber()
+    {
+            $tracklist = new Tracklist();
+            $tracklist->editWithEditor();
+            echo $tracklist->asText(Tracklist::ALL);
     }
     
     protected function getMostRecentFile($from_dir, $type)
