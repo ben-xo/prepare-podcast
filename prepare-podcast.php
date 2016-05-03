@@ -46,7 +46,7 @@ $image_dir = '/Users/ben/Pictures';
 
 $config = array(
     'bassdrive' => array(
-        'image' => 'xposure-show.jpg',
+        'image' => 'xposure-cover-squake.jpg',
         'album' => 'http://www.bassdrive.com/',
         'genre' => 'Drum & Bass',
         'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
