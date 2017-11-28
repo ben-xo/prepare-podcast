@@ -140,6 +140,15 @@ class PreparePodcast
                 throw new InvalidArgumentException('No MP3 specified.');
                 
             $mp3_file_name = $argv[2];
+
+            if(isset($argv[3]) and $argv[3] == '--debug')
+            {
+                $config['debug'] = true;
+            }
+            else
+            {
+                $config['debug'] = false;
+            }            
             
             if($config[$show]['image'] !== false)
             {
@@ -194,10 +203,10 @@ class PreparePodcast
             sleep(2);
 
             $this->out("Trimming silence...\n");
-            $mp3_file->trimSilence();
+            $mp3_file->trimSilence($config['debug']);
 
             $this->out("Writing info to file...\n");
-            $mp3_file->applyID3();
+            $mp3_file->applyID3($config['debug']);
             
             if($config[$show]['mixcloud'])
             {
@@ -677,13 +686,13 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            '-min=0.5',
+            '-min=1.5',
             $this->getFilename()
         );
 
         if($debug)
         {
-            print   (implode(' ', array_map('escapeshellarg', $args)));
+            print   ("\n***\n" . implode(' ', array_map('escapeshellarg', $args)) . "\n***\n");
         }
         else
         {
@@ -720,7 +729,7 @@ class MP3File extends AFile
         
         if($debug)
         {
-            print   (implode(' ', array_map('escapeshellarg', $args)));
+            print   ("\n***\n" . implode(' ', array_map('escapeshellarg', $args)) . "\n***\n");
         }
         else
         {
@@ -742,7 +751,7 @@ class MP3File extends AFile
             
             if($debug)
             {
-                print   (implode(' ', array_map('escapeshellarg', $args)));
+                print   ("\n***\n" . implode(' ', array_map('escapeshellarg', $args)) . "\n***\n");
             }
             else
             {
