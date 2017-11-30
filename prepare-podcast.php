@@ -65,6 +65,15 @@ $config = array(
     ),
 );
 
+define('EDITOR_BOILERPLATE', <<<EOD
+# Check the tracklist titles make sense. Add missing tracks at the beginning or end.
+# If you need to add a track at the beginning, use times like 23:59:59.
+# If you want to remove time from the start, increase the number e.g. 00:03:00.
+# Track positions and times will be renumbered for you so they start at 00:00:00.
+
+EOD
+);
+
 /*** Interfaces **/
 
 interface Editable
@@ -239,7 +248,7 @@ class PreparePodcast
     {
         $tracklist = new Tracklist();
         $tracklist->editWithEditor();
-        $this->out($tracklist->asText(Tracklist::ALL));
+        $this->out($tracklist->asText());
     }
     
     protected function getMostRecentFile($from_dir, $type)
@@ -326,6 +335,11 @@ class Track implements Editable
         $this->start_time = $st;
     }
 
+    /**
+     * This function assumes that tracklist times are wall-clock times.
+     * If you need to insert a track before 00:00:00 (for it to be renumbered) then use times like 23:59:59 etc.
+     * Note that prepare-podcast can't handle mixes >24hours long ...
+     */
     public function adjustTimeTo($base_time)
     {
         $adj_time = new PodcastDateTime($base_time);
@@ -431,6 +445,7 @@ class Tracklist implements Editable
         foreach ($rows as $row)
         {
             if (empty($row)) continue;
+            if (preg_match('/^#/', $row)) continue;
             $track = new Track();
             $track->fromText($row);
             $tracks[] = $track;
@@ -467,7 +482,7 @@ class Tracklist implements Editable
     function editWithEditor($editor_cmd='vim') 
     {
         $tempfile = tempnam('', 'podcast');
-        file_put_contents($tempfile, $this->asText());
+        file_put_contents($tempfile, EDITOR_BOILERPLATE . $this->asText());
         passthru(escapeshellarg($editor_cmd) . ' 2>/dev/null ' . escapeshellarg($tempfile));
         $this->fromText( file_get_contents($tempfile) );
         unlink($tempfile);
