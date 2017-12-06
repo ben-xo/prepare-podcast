@@ -714,10 +714,17 @@ class MP3File extends AFile
             passthru(implode(' ', array_map('escapeshellarg', $args)), $retval);
             if(0 !== $retval) throw new RuntimeException('Call to mp3splt to trim file failed');
 
-            $retval = unlink($this->getFilename());
-            if(false === $retval) throw new RuntimeException('Delete untrimmed file failed');
+            $filename = $this->getFilename();
+            $filename_orig = $this->getBasename('.mp3') . '_orig.mp3';
+            $filename_trim = $this->getBasename('.mp3') . '_trimmed.mp3';
 
-            $retval = rename($this->getBasename('.mp3') . '_trimmed.mp3', $this->getFilename());
+            if(filesize($filename_trim) / filesize($filesize) < 0.95)
+                throw new RuntimeException('Trimmed file <95% size of original');
+
+            $retval = rename($filename, $filename_orig);
+            if(false === $retval) throw new RuntimeException('Renaming untrimmed file failed');
+
+            $retval = rename($filename_trim, $filename);
             if(false === $retval) throw new RuntimeException('Renaming trimmed file failed');
         }
     }
