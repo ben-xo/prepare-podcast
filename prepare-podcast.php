@@ -701,7 +701,7 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            '-min=1.5',
+            'min=1.5,th=-24',
             $this->getFilename()
         );
 
