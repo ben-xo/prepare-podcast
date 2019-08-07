@@ -1,0 +1,5 @@
+Travis Shirk <travis@pobox.com> - eyeD3 author/maintainer
+Todd Zullinger <tmz@pobox.com> - eyeD3 developer
+Aaron VonderHaar <avh4@users.sourceforge.net> - support for GEOB tags
+Ryan Finnie <ryan@finnie.org> - Wrote PyID3 which contained the binfuncs
+                                module which eyeD3 currenly uses 

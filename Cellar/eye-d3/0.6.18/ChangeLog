@@ -1,0 +1,558 @@
+2011-11-25 03:29  'Travis Shirk <travis@pobox.com>'
+
+	* [r1095] bin/eyeD3, src/eyeD3/tag.py: Proper xml escaping for
+	  --jep-118 output and a new RFC 822 output
+	  format (--rfc822). Thanks to Neil Schemenauer <nas@arctrix.com>
+
+2011-11-25 02:28  'Travis Shirk <travis@pobox.com>'
+
+	* [r1094] bin/eyeD3: Updated copyright year
+
+2011-11-25 02:27  'Travis Shirk <travis@pobox.com>'
+
+	* [r1093] Makefile.in: Fixed autoconf warning about using
+	  datarootdir
+
+2011-11-24 07:21  'Travis Shirk <travis@pobox.com>'
+
+	* [r1091] patches/fix-unexplained-ascii-codec-conversion.patch,
+	  patches/metamp3: Added some patches for future review
+
+2011-11-24 07:00  'Travis Shirk <travis@pobox.com>'
+
+	* [r1090] src/eyeD3/tag.py: Allow delimited genre strings (, ; |
+	  etc.)
+
+2011-11-24 07:00  'Travis Shirk <travis@pobox.com>'
+
+	* [r1089] bin/eyeD3, src/eyeD3/frames.py: Bug fixes
+
+2011-11-24 06:15  'Travis Shirk <travis@pobox.com>'
+
+	* [r1088] README.t2t.in, src/eyeD3/frames.py, src/eyeD3/tag.py,
+	  src/eyeD3/utils.py: Use of the 'magic' module for better
+	  mime-type guessing (it will open the file) when the standard
+	  mimetype module fails simply using the filename.
+	  
+	  Ville Skyttä ville.skytta@iki.fi via bounce2.pobox.com
+	  
+	  5/25/10
+	  
+	  Hi Travis,
+	  
+	  Attached is a patch for eyeD3 that improves its MIME type
+	  guessing, using
+	  libmagic python bindings if available for content based guessing
+	  when the
+	  standard mimetypes module fails to return a type.
+	  
+	  By the way I see the eyeD3 homepage says Python >= 2.5 is
+	  required, but README
+	  says Python >= 2.3, maybe you'll want to correct one of those.
+
+2011-11-24 06:10  'Travis Shirk <travis@pobox.com>'
+
+	* [r1087] Makefile.in: Added patch-clean
+
+2011-11-24 05:24  'Travis Shirk <travis@pobox.com>'
+
+	* [r1086] src/eyeD3/tag.py: Do not clobber existing file names with
+	  rename
+
+2011-11-24 04:54  'Travis Shirk <travis@pobox.com>'
+
+	* [r1085] src/eyeD3/tag.py: oops, debug prints removed
+
+2011-11-24 04:46  'Travis Shirk <travis@pobox.com>'
+
+	* [r1084] bin/eyeD3, src/eyeD3/tag.py, src/eyeD3/utils.py: Itunes
+	  genre support, by Ben Isaacs (Ben XO me@ben-xo.com)
+	  
+	  This patch enables eyeD3 (from http://eyed3.nicfit.net/) to write
+	  genre fields
+	  that are always compatible with iTunes. Just add --itunes as an
+	  option when
+	  running the command line tool, or if you're using eyeD3 as a lib,
+	  set
+	  eyeD3.utils.ITUNES_COMPAT = 1 .
+	  
+	  iTunes ignores genre fields with a number above 125 (which
+	  happens to include
+	  'Drum & Bass' - see why I'm suddenly interested?) The patch makes
+	  eyeD3 treat
+	  tags numbered 126+ as custom genres (by excluding the number,
+	  which is usually
+	  hidden from the user anyway).
+
+2011-11-24 04:26  'Travis Shirk <travis@pobox.com>'
+
+	* [r1083] patches/id3_2_2.patch, patches/notag.patch,
+	  patches/stdin-datemadness.patch, patches/term.py,
+	  patches/text2date.patch, patches/utf16-delim.patch,
+	  patches/utf16.patch: Cleaned up patch queue
+
+2011-11-24 03:57  'Travis Shirk <travis@pobox.com>'
+
+	* [r1082] bin/eyeD3, src/eyeD3/tag.py: Work around invalid bpm
+	  values (and some cleanup)
+
+2011-11-24 03:24  'Travis Shirk <travis@pobox.com>'
+
+	* [r1081] patches/fs_encoding.patch: Already applied
+
+2011-11-24 03:22  'Travis Shirk <travis@pobox.com>'
+
+	* [r1080] src/eyeD3/frames.py: Handle invalid user text data fields
+	  where only one part of the desc/text pair is present. Return it
+	  as the desc.
+
+2009-12-29 01:30  'Travis Shirk <travis@pobox.com>'
+
+	* [r209] etc/gentoo/eyeD3-0.6.18.ebuild: Added
+
+2009-12-19 22:57  'Travis Shirk <travis@pobox.com>'
+
+	* [r193] src/eyeD3/frames.py: Fixed slow read(1) loop when GEOB
+	  frames are malformed. Patch from Stephen Fairchild
+	  <sfairchild@bethere.co.uk>
+
+2009-12-19 22:18  'Travis Shirk <travis@pobox.com>'
+
+	* [r192] bin/eyeD3, src/eyeD3/tag.py: Disc number support (TPOS)
+	  with -d and -D - Patch by Nathaniel Clark <nate@misrule.us>
+
+2009-12-17 04:27  'Travis Shirk <travis@pobox.com>'
+
+	* [r189] README.t2t.in: Fixed blackwave link
+
+2009-11-15 04:28  'Travis Shirk <travis@pobox.com>'
+
+	* [r188] src/eyeD3/tag.py: FATdrtop genre allowable
+
+2009-11-15 04:24  'Travis Shirk <travis@pobox.com>'
+
+	* [r187] src/eyeD3/frames.py: Fixed log msg where len(None) was
+	  taken, thanks to Charles Cazabon <charlesc@fatdrop.co.uk>
+
+2009-11-15 04:07  'Travis Shirk <travis@pobox.com>'
+
+	* [r186] src/eyeD3/tag.py: Added %Y (year) and %G (genre) subst
+	  vars for file renames. Thanks to Otávio Pontes
+	  <otaviobp@gmail.com>
+
+2009-09-08 00:11  'Travis Shirk <travis@pobox.com>'
+
+	* [r185] bin/eyeD3: Allow setting new encoding and version
+	  conversion at once.
+	  eyeD3 --set-encoding=utf8 --to-v2.4 test.mp3 (e.g.)
+
+2009-05-26 23:12  'Travis Shirk <travis@pobox.com>'
+
+	* [r156] configure.in: Version bump
+
+2009-05-26 23:11  'Travis Shirk <travis@pobox.com>'
+
+	* [r155] src/eyeD3/frames.py: Fixed a formatting bug
+
+2009-02-07 20:54  'Travis Shirk <travis@pobox.com>'
+
+	* [r154] .: svnmerge blocking
+
+2009-02-07 20:52  'Travis Shirk <travis@pobox.com>'
+
+	* [r152] bin/eyeD3, src/eyeD3/frames.py, src/eyeD3/tag.py: Cleanup
+	  to make merging easier
+
+2009-02-03 01:33  'Travis Shirk <travis@pobox.com>'
+
+	* [r150] NEWS, README.t2t.in: Stupid doc mistakes found after
+	  release, of course.
+
+2009-02-02 03:54  'Travis Shirk <travis@pobox.com>'
+
+	* [r148] ChangeLog: Update for 0.6.7
+
+2009-02-02 03:54  'Travis Shirk <travis@pobox.com>'
+
+	* [r147] NEWS: Relese updates.
+
+2009-02-02 02:46  'Travis Shirk <travis@pobox.com>'
+
+	* [r146] etc/gentoo/eyeD3-0.6.17.ebuild: Added
+
+2009-02-02 02:44  'Travis Shirk <travis@pobox.com>'
+
+	* [r145] src/eyeD3/frames.py: unicode wrapper to support bad
+	  unicode workarounds
+
+2009-02-02 02:43  'Travis Shirk <travis@pobox.com>'
+
+	* [r144] src/eyeD3/tag.py: Allow '.' in genres
+
+2009-01-26 02:03  'Travis Shirk <travis@pobox.com>'
+
+	* [r141] bin/eyeD3, doc/eyeD3.1.in, src/eyeD3/frames.py,
+	  src/eyeD3/tag.py: Support for URL frames (W***) and WXXX.
+
+2009-01-22 06:18  'Travis Shirk <travis@pobox.com>'
+
+	* [r140] src/eyeD3/frames.py: fix for more invalid utf16
+
+2008-10-18 21:10  'Travis Shirk <travis@pobox.com>'
+
+	* [r139] bin/eyeD3: Fixed NFO output bug.. losing one track per
+	  album.
+
+2008-10-17 00:10  'Travis Shirk <travis@pobox.com>'
+
+	* [r137] acsite.m4, configure.in: Version bumped to 0.6.17 and
+	  better autoconf python checker
+
+2008-10-12 23:57  'Travis Shirk <travis@pobox.com>'
+
+	* [r136] src/eyeD3/tag.py: Allow ' in genres, for example, Drun 'n'
+	  Bass
+
+2008-10-12 23:41  'Travis Shirk <travis@pobox.com>'
+
+	* [r135] src/eyeD3/frames.py: Handle PLCT frames with less than 4
+	  bytes of data whick is technically BAD TAG.
+
+2008-10-12 23:28  'Travis Shirk <travis@pobox.com>'
+
+	* [r134] bin/eyeD3: Bug fix to show ALL genres with --list-genres
+
+2008-10-12 23:03  'Travis Shirk <travis@pobox.com>'
+
+	* [r133] bin/eyeD3: non-zero exit status for exceptions.
+
+2008-06-08 18:24  'Travis Shirk <travis@pobox.com>'
+
+	* [r129] ChangeLog, NEWS, etc/gentoo/eyeD3-0.6.16.ebuild: Release
+	  0.6.16 updates
+
+2008-06-08 17:32  'Travis Shirk <travis@pobox.com>'
+
+	* [r128] src/eyeD3/tag.py: Added removeUserTextFrame -- Patch by
+	  David Grant <davidgrant@gmail.com>
+
+2008-06-01 19:10  'Travis Shirk <travis@pobox.com>'
+
+	* [r125] NEWS: Updated NEWS
+
+2008-06-01 18:54  'Travis Shirk <travis@pobox.com>'
+
+	* [r124] README.t2t.in: Updated with a new tag example.
+
+2008-06-01 18:13  'Travis Shirk <travis@pobox.com>'
+
+	* [r122] bin/eyeD3: Limit to 79 characters+newline instead of 80
+	  for consoles. Closes
+	  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=474656
+
+2008-06-01 18:02  'Travis Shirk <travis@pobox.com>'
+
+	* [r121] src/eyeD3/frames.py: Infinite loop fix while searching for
+	  APIC data.
+	  Really bad typo bug fix :)
+
+2008-06-01 17:42  'Travis Shirk <travis@pobox.com>'
+
+	* [r118] bin/eyeD3: profiling restructure
+
+2008-06-01 17:15  'Travis Shirk <travis@pobox.com>'
+
+	* [r117] configure.in: bumped version to 0.6.16
+
+2008-03-02 21:11  'Travis Shirk <travis@pobox.com>'
+
+	* [r114] bin/eyeD3: Bumped copyright year
+
+2008-03-02 21:07  'Travis Shirk <travis@pobox.com>'
+
+	* [r113] ChangeLog: Release update
+
+2008-03-02 00:08  'Travis Shirk <travis@pobox.com>'
+
+	* [r112] bin/eyeD3, doc/eyeD3.1.in, src/eyeD3/tag.py: Man page
+	  update and cleanup
+
+2008-03-01 22:54  'Travis Shirk <travis@pobox.com>'
+
+	* [r110] NEWS: new date
+
+2008-03-01 22:52  'Travis Shirk <travis@pobox.com>'
+
+	* [r109] ChangeLog: release update
+
+2008-03-01 22:49  'Travis Shirk <travis@pobox.com>'
+
+	* [r108] README.t2t.in: Added ubuntu and slackware package
+	  locations
+
+2008-03-01 22:15  'Travis Shirk <travis@pobox.com>'
+
+	* [r107] AUTHORS, NEWS, README.t2t.in,
+	  etc/gentoo/eyeD3-0.6.15.ebuild: Release updates
+
+2008-03-01 22:13  'Travis Shirk <travis@pobox.com>'
+
+	* [r106] bin/eyeD3, src/eyeD3/tag.py: Added Tag.removeImages and
+	  --removeImages and ZZ-F drive args.
+
+2008-02-24 00:25  'Travis Shirk <travis@pobox.com>'
+
+	* [r101] src/eyeD3/tag.py: Remove duplicate code
+
+2008-02-23 19:30  'Travis Shirk <travis@pobox.com>'
+
+	* [r99] src/eyeD3/tag.py: Allow floating point BPMs but round since
+	  the spec says this should be an integer
+
+2008-02-19 02:40  'Travis Shirk <travis@pobox.com>'
+
+	* [r97] src/eyeD3/frames.py: When tag header unsync bit is set
+	  deunsync all frame data at once for ID3 <= 2.3,
+	  or per frame for ID3 >= 2.4
+
+2008-02-17 23:14  'Travis Shirk <travis@pobox.com>'
+
+	* [r95] ChangeLog: Updated
+
+2008-02-17 22:37  'Travis Shirk <travis@pobox.com>'
+
+	* [r94] src/eyeD3/frames.py: Synchronization bug fixes merges from
+	  trunk
+
+2008-01-29 04:14  'Travis Shirk <travis@pobox.com>'
+
+	* [r92] configure.in: version bump
+
+2008-01-15 19:18  'Travis Shirk <travis@pobox.com>'
+
+	* [r91] doc/eyeD3.1.in: Fixed --track-genre to read --genre
+
+2008-01-01 04:39  'Travis Shirk <travis@pobox.com>'
+
+	* [r89] src/eyeD3/__init__.py.in, src/eyeD3/frames.py:
+	  do_locale=True makes getpreferredencoding return correct results
+
+2007-11-25 18:51  'Travis Shirk <travis@pobox.com>'
+
+	* [r76] .: 0.6 branch
+
+2007-10-21 21:16  'Travis Shirk <travis@pobox.com>'
+
+	* [r68] Added --no-tagging-time-frame option
+
+2007-07-22 23:52  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r67] minor fixes to --lametag output
+
+2007-07-04 05:32  'Travis Shirk <travis@pobox.com>'
+
+	* [r66] Typo fix
+
+2007-07-04 05:28  'Travis Shirk <travis@pobox.com>'
+
+	* [r65] Accept floating point BPM values on the command line by
+	  rounding to an int.
+	  The Tag.setBPM method enforces a proper int, but does not round,
+	  this is the responsibility of user code
+
+2007-06-09 23:15  'Travis Shirk <travis@pobox.com>'
+
+	* [r64] APIC picture type fix: Michael Schout <mschout@gkg.net>
+
+2007-06-07 03:27  'Travis Shirk <travis@pobox.com>'
+
+	* [r62] ID3 v1 comment encoding fix. Patch by Renaud Saint-Gratien
+	  <rsg@nerim.net>
+
+2007-05-13 18:34  'Travis Shirk <travis@pobox.com>'
+
+	* [r55] Removed test dir
+
+2007-05-12 23:20  'Travis Shirk <travis@pobox.com>'
+
+	* [r49] Initialized merge tracking via "svnmerge" with revisions
+	  "1-705" from
+	  svn://puddy.nicfit.lan/eyeD3/branches/nextgen
+
+2007-05-12 22:06  'Travis Shirk <travis@pobox.com>'
+
+	* [r44] Cleaned out some old patches
+
+2007-05-08 03:29  'Travis Shirk <travis@pobox.com>'
+
+	* [r43] Include eyeD3 usage info in the README automatically.
+
+2007-05-08 02:16  'Travis Shirk <travis@pobox.com>'
+
+	* [r41] Release updates
+
+2007-05-08 02:00  'Travis Shirk <travis@pobox.com>'
+
+	* [r40] Zero pad track nums, gives nice alignment in the times
+	  column
+
+2007-05-08 02:00  'Travis Shirk <travis@pobox.com>'
+
+	* [r39] Accept '!' in genres strings since "Oi!" is common.
+
+2007-05-08 00:54  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r38] add --lametag option to display LAME tags
+
+2007-05-08 00:28  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r37] a few more small cleanups
+
+2007-05-07 23:30  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r36] fixup lametag bitrate
+
+2007-05-07 17:42  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r35] some cleanups before release
+	  add a docstring detailing the data mined from the LAME tag
+
+2007-05-07 17:40  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r34] allow blame to be properly assigned to me
+
+2007-05-06 23:32  'Travis Shirk <travis@pobox.com>'
+
+	* [r33] Release updates
+
+2007-05-06 23:16  'Travis Shirk <travis@pobox.com>'
+
+	* [r32] Bug fix for duplicating TYER frames
+
+2007-05-06 22:37  'Travis Shirk <travis@pobox.com>'
+
+	* [r31] Allow for | in genre names to supports things such as
+	  'Rock|Punk|Pop-Punk'
+	  Slimdevices software allows this, thanks to John SJ Anderson
+	  <genehack@genehack.org> for patching this.
+
+2007-05-06 22:15  'Travis Shirk <travis@pobox.com>'
+
+	* [r30] Lame header support patch (Todd Zullinger)
+	  Output encoder version in 'eyeD3 --nfo' output
+
+2007-05-06 21:44  'Travis Shirk <travis@pobox.com>'
+
+	* [r29] Regression tests.
+
+2007-05-06 21:43  'Travis Shirk <travis@pobox.com>'
+
+	* [r28] Ran into another mp3 that eyeD3 could not read... refatored
+	  mp3 header locating and validity checks... eyeD3 reads my entire
+	  collection again.
+
+2007-05-04 01:33  'Travis Shirk <travis@pobox.com>'
+
+	* [r27] When there is no tag in the file there is no need to add 10
+	  (ID3 tag header size) to the seek location for the mp3 data.
+
+2007-05-01 01:48  'Travis Shirk <travis@pobox.com>'
+
+	* [r25] Release updates
+
+2007-05-01 01:36  'Travis Shirk <travis@pobox.com>'
+
+	* [r24] 'make install' does not build anything, thus doing it as
+	  root still means the normal user can clean.
+
+2007-04-30 07:43  'Travis Shirk <travis@pobox.com>'
+
+	* [r23] Compressed results
+
+2007-04-30 07:42  'Travis Shirk <travis@pobox.com>'
+
+	* [r22] regression results
+
+2007-04-30 00:45  'Travis Shirk <travis@pobox.com>'
+
+	* [r21] Test harness fixes
+
+2007-04-30 00:43  'Travis Shirk <travis@pobox.com>'
+
+	* [r20] Xing header fixes, fixes #5
+
+2007-04-29 23:58  'Travis Shirk <travis@pobox.com>'
+
+	* [r19] Tester updates
+
+2007-04-29 09:31  'Travis Shirk <travis@pobox.com>'
+
+	* [r18] Release updates
+
+2007-04-29 09:17  'Travis Shirk <travis@pobox.com>'
+
+	* [r17] Release updates
+
+2007-04-29 06:12  'Travis Shirk <travis@pobox.com>'
+
+	* [r16] Time computation fixes when MP3 frames headers were
+	  mistakingly found, thanks to Virgil Dupras <vdupras@goombah.com>
+	  for reporting this and providing the test case.
+
+2007-04-29 05:41  'Travis Shirk <travis@pobox.com>'
+
+	* [r15] Added option --run-profiler
+
+2007-04-28 22:03  'Travis Shirk <travis@pobox.com>'
+
+	* [r14] NFO output support (--nfo)
+
+2007-04-22 22:29  'Travis Shirk <travis@pobox.com>'
+
+	* [r13] Update
+
+2007-04-22 22:29  'Travis Shirk <travis@pobox.com>'
+
+	* [r12] Determine local encoding without using setlocale
+
+2007-03-06 17:59  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r11] note --no-zero-padding option
+
+2007-03-06 03:26  'Travis Shirk <travis@pobox.com>'
+
+	* [r10] Updated
+
+2007-03-04 18:08  'Travis Shirk <travis@pobox.com>'
+
+	* [r8] Removed cruft
+
+2007-03-04 17:55  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r7] add --no-zero-padding option to manpage
+
+2007-03-04 17:43  'Todd Zullinger <tmz@pobox.com>'
+
+	* [r6] add --no-zero-padding option to allow disabling of zero
+	  padding track numbers
+
+2007-03-04 03:21  'Travis Shirk <travis@pobox.com>'
+
+	* [r5] Test
+
+2007-03-04 02:57  'Travis Shirk <travis@pobox.com>'
+
+	* [r4] Testing new repo
+
+2007-03-04 02:51  'Travis Shirk <travis@pobox.com>'
+
+	* [r3] Added
+
+2007-03-04 02:49  'Travis Shirk <travis@pobox.com>'
+
+	* [r2] Added eyeD3
+
+2007-03-04 02:31  root
+
+	* [r1] Added eyeD3
+

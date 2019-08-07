@@ -1,0 +1,243 @@
+.TH EYED3 "1" "@MANPAGE_DATE@" "eyeD3 @PACKAGE_VERSION@" ""
+.SH "NAME"
+.B eyeD3
+\- displays and manipulates id3-tags on mp3 files
+.SH "SYNOPSIS"
+.B eyeD3
+.RI [ options ]
+.RI file
+.RI [ file... ]
+.br
+.B eyeD3
+.RI [ options ]
+.RI dir
+.RI [ dir... ]
+.br
+
+.SH "DESCRIPTION"
+.B eyeD3
+Manipulates ID3 tags in mp3 files and is able to read/write and convert between
+ID3 v1.0, v1.1, v2.3 and v2.4 tags.  High-level access is provided to most
+frames, including APIC (i.e., images) frames.
+
+.SH "OPTIONS"
+\fB\-h, \fB\-\-help\fR
+Shows a brief help string and exit.
+.TP
+\fB\-\-version\fR
+Show program's version number and exit.
+.TP
+\fB\-\-no\-color\fR
+Disable color output.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Show all available tag information.
+.TP
+\fB\-\-debug\fR
+Trace program execution; for debugging.
+
+.SH "TAG VERSIONS"
+.TP
+\fB\-1, \fB\-\-v1\fR
+Only read/write ID3 v1 tags. By default, v1 tags are only read if there is
+not a v2 tag.
+.TP
+\fB\-2, \fB\-\-v2\fR
+Only read/write ID3 v2.x tags.
+.TP
+\fB\-\-to\-v1.1\fR
+Convert the file's tag to ID3 v1.1. (Or 1.0 if there is no track number)
+.TP
+\fB\-\-to\-v2.3\fR
+Convert the file's tag to ID3 v2.3.
+.TP
+\fB\-\-to\-v2.4\fR
+Convert the file's tag to ID3 v2.4
+
+.SH "TAG DATA"
+Options for manipulating tag data have the side-effect of removing a frame
+when the data specified is the empty string.  For example, --artist="" 
+(or -a "") would cause the artist frame to be removed.  This is especially
+useful for removing comment frames.
+
+.TP
+\fB-a \fRSTRING, \fB\-\-artist=\fRSTRING\fR
+Set artist the to STRING.
+.TP
+\fB-A \fRSTRING, \fB\-\-album=\fRSTRING\fR
+Set album to STRING.
+.TP
+\fB-t \fRSTRING, \fB\-\-title=\fRSTRING\fR
+Set track title to STRING.
+.TP
+\fB-n \fRNUM, \fB\-\-track=\fRNUM\fR
+Set track number to NUM.
+.TP
+\fB-N \fRNUM, \fB\-\-track\-total=\fRNUM\fR
+Set total number of tracks to NUM.
+.TP
+\fB-G \fRSTRING, \fB\-\-genre=\fRSTRING\fR
+Sets genre to STRING. (See --list-genres)
+.TP
+\fB-Y \fRYEAR, \fB\-\-year=\fRYEAR\fR
+Set the four digit year.
+.TP
+\fB-p \fRSTRING, \fB\-\-publisher=\fRSTRING\fR
+Set the publisher/label text.
+.TP
+\fB\-\-comment=\fR[LANGUAGE]:DESCRIPTION:COMMENT\fR
+Add (or remove when COMMENT is "") a comment.  Note that the argument value
+MUST always contain exactly two ':' characters to delimit the fields even
+when the default language is being used.  The DESCRIPTION string is the
+comment title.
+The optional LANGUAGE string MUST be a three-character ISO 639
+language code.  The default is "eng" for English.
+
+A tag may not have more than one comment frame with the same DESCRIPTION and
+LANGUAGE values. 
+.TP
+\fB\-\-remove-comments\fR
+Remove all comment frames from the tag.
+.TP
+\fB\-\-lyrics=\fR[LANGUAGE]:DESCRIPTION:LYRICS\fR
+Add (or remove when LYRICS is "") a comment.  Note that the argument value
+MUST always contain exactly two ':' characters to delimit the fields even
+when the default language is being used.  The DESCRIPTION string is the
+lyrics title.
+The optional LANGUAGE string MUST be a three-character ISO 639
+language code.  The default is "eng" for English.
+
+A tag may not have more than one lyrics frame with the same DESCRIPTION and
+LANGUAGE values. 
+.TP
+\fB\-\-remove-lyrics\fR
+Remove all lyrics frames from the tag.
+.TP
+\fB\-\-add\-image=\fRIMG_PATH:TYPE[:DESCRIPTION]\fR
+Add an image to the tag (APIC frame). 
+The IMG_PATH is the image file to add to the tag. If the path value is empty
+the image frame with a value of TYPE is removed from the tag.
+The TYPE is one of the types listed when 'eyeD3 --list-image-types' is run.
+The DESCRIPTION is optional and will default to "".  
+
+A tag may not have more than one image frame with the same TYPE values. 
+.TP
+\fB\-\-remove-images\fR
+Remove all image (APIC) frames from the tag.
+.TP
+\fB\-\-add\-object=\fROBJ_PATH[:DESCRIPTION[:MIME-TYPE[:FILENAME]]]\fR
+Add an encapsulated object to the tag (GEOB frame).  The description
+and filename are optional, but when used, the ':'
+delimiters must be present.  If the OBJ_PATH value is
+empty the GEOB frame with DESCRIPTION is removed.
+
+A tag may not have more than one object (GEOB) frame with the same DESCRIPTION
+values. 
+.TP
+\fB\-i \fRDIR, \fB\-\-write\-images=\fRDIR\fR
+Causes all attached images (APIC frames) to be written to the specified
+directory.  They are named by their "image type".  For example, if the image
+is a png and the type is OTHER, a file named OTHER.png is written to the
+desired directory.  If the file name already exist, a unique numeric value is
+appended to the type string.
+.TP
+\fB\-o \fRDIR, \fB\-\-write\-objects=\fRDIR\fR
+Causes all attached objects (GEOB frames) to be written
+to the specified directory.  The files are written with the name
+"<filename>.<mime-subtype>" in the specified directory.
+.TP
+\fB\-\-set\-text\-frame=\fRFID:TEXT\fR
+Set the value of a specific (i.e., FID) text frame.  To remove the frame,
+specify an empty value.  e.g., --set-text-frame="TDRC:"
+.TP
+\fB\-\-set\-user\-text\-frame=\fRDESC:TEXT\fR
+Set the value of a TXXX text frame with a unique description.
+To remove the frame, specify an empty value.
+e.g., --set-user-text-frame="Description:"
+.TP
+\fB\-\-set\-url\-frame=\fRFID:URL\fR
+Set the value of a specific (i.e., FID) URL frame.  To remove the frame,
+specify an empty URL.  e.g., --set-url-frame="WCOM:"
+.TP
+\fB\-\-set\-user\-url\-frame=\fRDESC:URL\fR
+Set the value of a WXXX frame with unique description string.
+To remove the frame, specify an empty URL.
+e.g., --set-user-url-frame="Description:"
+.TP
+\fB\-\-play\-count=\fR[+]N\fR
+Set the play count (PCNT). If the argument value begins with '+' the value is
+incremented by N, otherwise it is set to exactly N.
+.TP
+\fB\-\-bpm=\fRN\fR
+Set the beats per minute value.  The value MUST be greater than 0.
+.TP
+\fB\-\-unique\-file-id=\fROWNER_ID:ID\fR
+Add a UFID frame.  If the ID arg is empty the UFID frame with OWNER_ID is
+removed.  An OWNER_ID MUST be specified.
+.TP
+\fB\-\-set\-encoding=\fRlatin1|utf8|utf16-LE|utf16-BE\fR
+Set the encoding that is used for _all_ text frames in the tag. The encoding
+is applied only when the tag is updated, therefore a frame must be set or
+--force-update is present.  Note that, unfortunately, utf8 is not supported
+by ID3 v2.3 tags.
+.TP
+\fB\-\-remove-v1\fR
+Remove ID3 v1.x tag.
+.TP
+\fB\-\-remove-v2\fR
+Remove ID3 v2.x tag.
+.TP
+\fB\-\-remove-all\fR
+Remove all tags.
+
+.SH "MISC. OPTIONS"
+.TP
+\fB\-\-rename=\fRPATTERN\fR
+Rename the file based on PATTERN which may contain the following substitution
+variables: %A (artist), %a (album), %t (title), %n (track number), and
+%N (the total track count).  The PATTERN string MUST not contain the file
+name extenstion.
+.TP
+\fB\-\-fs\-encoding=\fRENCODING\fR
+Use the specified character encoding for filenames when renaming files.  The
+default value is iso-8859-1.
+.TP
+\fB\-l\fR, \fB\-\-list\-genres\fR
+Display the table of "valid" ID3 genres and exit.
+.TP
+\fB\-\-list\-image\-types\fR
+List all possible image types for APIC frames.
+.TP
+\fB\-\-strict\fR
+Fail for tags that violate the ID3 specification.
+.TP
+\fB\-\-jep\-118\fR
+Output the tag per the format described in JEP-0118.
+See http://www.xmpp.org/extensions/xep-0118.html
+.TP
+\fB\-\-nfo\fR
+Output NFO information for each album directory.
+.TP
+\fB\-\-lametag\fR
+Prints the LAME Tag.
+.TP
+\fB\-\-force\-update\fR
+Update the tag regardless of whether any frames were set on the command line.
+.TP
+\fB\-\-no\-zero\-padding\fR
+Don't pad track or disc numbers with 0's.
+.TP
+\fB\-\-no\-tagging\-time\-frame\fR
+When saving tags do not add a TDTG (tagging time) frame.
+.TP
+\fB-F \fRDELIM\fR
+Specify a new delimiter for option values that contain multiple fields
+(default delimiter is ':')
+
+.SH SEE ALSO
+http://eyed3.nicfit.net/
+
+.SH AUTHOR
+eyeD3 was written by Travis Shirk <travis@pobox.com>. This manpage was written
+by Alexander Wirt <formorer@debian.org> for the Debian Distribution and Travis
+Shirk.

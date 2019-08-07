@@ -1,0 +1,282 @@
+eyeD3 0.6.18
+Travis Shirk <travis@pobox.com>
+11.24.2011
+
+
+General Information
+===================
+
+eyeD3 is a Python module and program for processing ID3 tags.
+Information about mp3 files (i.e bit rate, sample frequency,
+play time, etc.) is also provided.  The formats supported are ID3
+v1.0/v1.1 (http://id3lib.sourceforge.net/id3/id3v1.html)
+and v2.3/v2.4 (http://id3lib.sourceforge.net/id3/develop.html).
+
+The current stable version is 0.6.18.  It and earlier versions are
+available here (http://eyed3.nicfit.net/releases/).
+
+See the NEWS (NEWS) and/or ChangeLog (ChangeLog) for changes.
+
+Requirements
+============
+ - Python (http://www.python.org/) >= 2.5
+ - python-magic (http://www.darwinsys.com/file/) optional
+
+Installation
+============
+
+Source tarball
+--------------
+
+     gzip -dc eyeD3-0.6.18.tar.gz | tar xvf -
+     cd eyeD3-0.6.18
+     ./configure
+     make
+     make install (as root)
+
+
+Gentoo
+------
+
+     emerge eyeD3
+
+See here (http://gentoo-portage.com/dev-python/eyeD3) for more info.
+
+Ubuntu
+------
+See here (http://packages.ubuntu.com/search?keywords=eyeD3&searchon=names&suite=all&section=all) for more info.
+
+Debian
+------
+See here (http://packages.debian.org/eyed3) for more info.
+
+Suse
+----
+See here (http://www.novell.com/products/linuxpackages/professional/python-eyed3.html) for more info.
+
+Slackware
+---------
+See linuxpackages.net (http://www.linuxpackages.net/search_view.php?by=name&name=eyeD3&ver=) for more info.
+
+Solaris SPARC and x86
+---------------------
+Packages available from
+Blastwave (http://www.blastwave.org/pkg/search.ftd?qs=pyeyeD3).
+
+How to Use eyeD3
+================
+The 'eyeD3' utility program can perform most ID3 tasks, and it is also the
+best example of how to use the API.  It supports the following features:
+
+  
+  Usage
+  =====
+    eyeD3 [OPTS] file [file...]
+  
+  Options
+  =======
+    --version             show program's version number and exit
+    -h, --help            show this help message and exit
+  
+  Tag Versions
+  ------------
+      -1, --v1            Only read/write ID3 v1.x tags. By default, v1.x tags
+                          are only read if there is not a v2.x tag.
+      -2, --v2            Only read/write ID3 v2.x tags.
+      --to-v1.1           Convert the file's tag to ID3 v1.1. (Or 1.0 if there is
+                          no track number.)
+      --to-v2.3           Convert the file's tag to ID3 v2.3
+      --to-v2.4           Convert the file's tag to ID3 v2.4
+  
+  Tag Data
+  --------
+      -a STRING, --artist=STRING
+                          Set artist
+      -A STRING, --album=STRING
+                          Set album
+      -t STRING, --title=STRING
+                          Set title
+      -n NUM, --track=NUM
+                          Set track number
+      -N NUM, --track-total=NUM
+                          Set total number of tracks
+      -G GENRE, --genre=GENRE
+                          Set genre. The argument is a valid genre string or
+                          number.  See --list-genres
+      -d NUM, --disc=NUM  Set disc number
+      -D NUM, --disc-total=NUM
+                          Set total number of discs
+      -Y STRING, --year=STRING
+                          Set a four digit year.
+      -c [LANGUAGE]:[DESCRIPTION]:COMMENT, --comment=[LANGUAGE]:[DESCRIPTION]:COMMENT
+                          Set comment
+      -L [LANGUAGE]:[DESCRIPTION]:LYRICS, --lyrics=[LANGUAGE]:[DESCRIPTION]:LYRICS
+                          Set lyrics
+      -p STRING, --publisher=STRING
+                          Set the publisher/label text
+      --remove-comments   Remove all comment frames.
+      --remove-lyrics     Remove all lyrics frames.
+      --add-image=IMG_PATH:TYPE[:DESCRIPTION]
+                          Add an image to the tag.  The description and type
+                          optional, but when used, both ':' delimiters must be
+                          present.  The type MUST be an string that corresponds
+                          to one given with --list-image-types. If the IMG_PATH
+                          value is empty the APIC frame with TYPE is removed.
+      --remove-images     Remove all image (APIC) frames.
+      --add-object=OBJ_PATH[:DESCRIPTION[:MIME-TYPE[:FILENAME]]
+                          Add an encapsulated object to the tag.  The description
+                          and filename are optional, but when used, the ':'
+                          delimiters must be present.  If the OBJ_PATH value is
+                          empty the GEOB frame with DESCRIPTION is removed.
+      -i DIR, --write-images=DIR
+                          Causes all attached images (APIC frames) to be written
+                          to the specified directory.
+      -o DIR, --write-objects=DIR
+                          Causes all attached objects (GEOB frames) to be written
+                          to the specified directory.
+      --set-text-frame=FID:TEXT
+                          Set the value of a text frame.  To remove the frame,
+                          specify an empty value.  e.g., --set-text-frame="TDRC:"
+      --set-user-text-frame=DESC:TEXT
+                          Set the value of a user text frame (i.e., TXXX). To
+                          remove the frame, specify an empty value.  e.g., --set-
+                          user-text-frame="SomeDesc:"
+      --set-url-frame=FID:URL
+                          Set the value of a URL frame.  To remove the frame,
+                          specify an empty value.  e.g., --set-url-frame="WCOM:"
+      --set-user-url-frame=DESC:URL
+                          Set the value of a user URL frame (i.e., WXXX). To
+                          remove the frame, specify an empty value.  e.g., --set-
+                          user-url-frame="SomeDesc:"
+      --play-count=[+]N   If this argument value begins with '+' the tag's play
+                          count (PCNT) is incremented by N, otherwise the value
+                          is set to exactly N.
+      --bpm=N             Set the beats per minute value.
+      --unique-file-id=OWNER_ID:ID
+                          Add a UFID frame.  If the ID arg is empty the UFID
+                          frame with OWNER_ID is removed.  An OWNER_ID MUST be
+                          specified.
+      --set-encoding=latin1|utf8|utf16-BE|utf16-LE
+                          Set the encoding that is used for _all_ text frames.
+                          This only takes affect when the tag is updated as the
+                          result of a frame value being set with another option
+                          (e.g., --artist=) or --force-update is present.
+      --remove-v1         Remove ID3 v1.x tag.
+      --remove-v2         Remove ID3 v2.x tag.
+      --remove-all        Remove both ID3 v1.x and v2.x tags.
+  
+  Misc. Options
+  -------------
+      --rename=NAME       Rename file (the extension is not affected) based on
+                          data in the tag using substitution variables: %A
+                          (artist), %a (album), %t (title), %n (track number),
+                          and %N (total number of tracks)
+      --fs-encoding=ENCODING
+                          Use the specified character encoding for the filename
+                          when renaming files
+      -l, --list-genres   Display the table of ID3 genres and exit
+      --list-image-types  List all possible image types
+      --strict            Fail for tags that violate the ID3 specification.
+      --itunes            Store tags in an iTunes compatible way.
+      --jep-118           Output the tag per the format described in JEP-0118.
+                          See http://www.xmpp.org/extensions/xep-0118.html
+      --rfc822            Output the tag in RFC822-like format
+      --nfo               Output NFO information.
+      --lametag           Prints the LAME Tag.
+      --force-update      Update the tag regardless of whether any frames are set
+                          with new values.
+      --no-color          Disable color output
+      --no-zero-padding   Don't pad track or disc numbers with 0's
+      --no-tagging-time-frame
+                          When saving tags do not add a TDTG (tagging time) frame
+      -F DELIM            Specify a new delimiter for option values that contain
+                          multiple fields (default delimiter is ':')
+      -v, --verbose       Show all available information
+      --debug             Trace program execution.
+      --run-profiler      Run using python profiler.
+
+
+Some simple programming examples follow here, excluding any error handling,
+of course :)
+
+Reading the contents of an mp3 file containing either v1 or v2 tag info:
+
+     import eyeD3
+     tag = eyeD3.Tag()
+     tag.link("/some/file.mp3")
+     print tag.getArtist()
+     print tag.getAlbum()
+     print tag.getTitle()
+
+
+Read an mp3 file (track length, bitrate, etc.) and access it's tag:
+
+  if eyeD3.isMp3File(f):
+     audioFile = eyeD3.Mp3AudioFile(f)
+     tag = audioFile.getTag()
+
+
+Specific tag versions can be selected:
+
+     tag.link("/some/file.mp3", eyeD3.ID3_V2)
+     tag.link("/some/file.mp3", eyeD3.ID3_V1)
+     tag.link("/some/file.mp3", eyeD3.ID3_ANY_VERSION)  # The default.
+
+
+Or you can iterate over the raw frames:
+
+     tag = eyeD3.Tag()
+     tag.link("/some/file.mp3")
+     for frame in tag.frames:
+        print frame
+
+
+Once a tag is linked to a file it can be modified and saved:
+
+     tag.setArtist(u"Cro-Mags")
+     tag.setAlbum(u"Age of Quarrel")
+     tag.update()
+
+
+If the tag linked in was v2 and you'd like to save it as v1:
+
+     tag.update(eyeD3.ID3_V1_1)
+
+
+Read in a tag and remove it from the file:
+
+     tag.link("/some/file.mp3")
+     tag.remove()
+     tag.update()
+
+
+Add a new tag:
+
+     tag = eyeD3.Tag()
+     tag.link('/some/file.mp3')    # no tag in this file, link returned False
+     tag.header.setVersion(eyeD3.ID3_V2_3)
+     tag.setArtist('Fugazi')
+     tag.update()
+
+
+Support
+=======
+eyeD3 now has a mailing list.  Send a message to
+<eyed3-devel-subscribe@nicfit.net> to subscribe.
+
+Bugs and Patches
+================
+Find bugs! Please submit all comments, bug reports, or feature requests
+to Travis Shirk <travis@pobox.com>. Those of the patch variety are
+especially welcome :)
+
+See Also
+========
+eyeD3 is free software, refer to the COPYING (COPYING) file for details.
+
+See the TODO (TODO) file for possible enhancements.
+
+
+
+
+

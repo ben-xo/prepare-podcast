@@ -1,0 +1,39 @@
+Possible Enhancements:
+======================
+  - From id3.org v1 compatibility tests:
+     - id3v1_272_extra.mp3 -- utf-8 data in v1.  Is this even valid???
+     - id3v1_007_basic_W.mp3 -- Need to ignore/error on junk data,
+                                depending on non-strict/strict
+     ? Decoding errors on all genres higher than 128?  
+     X id3v1_014_year_F.mp3 is supposed to cause decoding error, but that's
+       bunk.
+  - From id3.org v2.2.0 compatibility tests:
+    - 0101805.tag - Oi! genre
+  - From id3.org v2.3.0 compatibility tests:
+    0120568.tag - encoding error
+
+  ~ bin/eyeD3 XML output.
+  ~ Regression/unit test app.
+  - Native Support for: MCDI, IPLS/TIPL, TEXT, USLT
+                        SYLT, TDAT (2.3 rendering TDRC)
+  - thatspot.tag - Parses fine, but native support for TMED, USLT, POPM,
+                   TLEN, and IPLS is needed.
+
+Useful options that could be added:
+==================================
+  - -P, --force-padding           Enforce padding of tag data
+  - --padded-size                 Set padded size
+  - -E, --export[=FILENAME]       Export tag(s) to file
+
+Extra Credit:
+==============
+  - Handle appended ID3v2 tags, SEEK frames, and footers.
+
+  - Native support for all frames!
+  - Abide by read only and tag/file alter flags in tag header when
+    setting/saving.
+  - Abide by extended header restrictions when setting/saving.
+  - Ogg tag reading
+  - Ogg tag writing
+  - Ogg audio spec support
+  - GUI
