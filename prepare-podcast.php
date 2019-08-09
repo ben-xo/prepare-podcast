@@ -821,7 +821,7 @@ class MixcloudClient
         
         $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
         $command = sprintf(
-            'curl -v -# -F mp3=@\"%s\" -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
+            'curl --http-1.1 -v -# -F mp3=@\"%s\" -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
             escapeshellarg($fn),
             escapeshellarg($this->picture),
             escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
@@ -833,7 +833,9 @@ class MixcloudClient
         );
         
         echo "***\n";
-        echo "upload with:\n\n". $command . "\n";
+        // echo "upload with:\n\n". $command . "\n";
+        passthru($command);
+        echo "\n*** DONE UPLOADING ***\n";
     }
     
     public function getTagsArgs()
