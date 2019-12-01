@@ -224,7 +224,7 @@ class PreparePodcast
                     $this->image_dir . '/' . $config[$show]['image']
                 );
                 $mixcloud->setMP3File($mp3_file);
-                $mixcloud->upload();
+                $mixcloud->upload($config['debug_backtrace()']);
             }
             
         
@@ -815,13 +815,13 @@ class MixcloudClient
         $this->mp3_file = $mp3_file;
     }
     
-    public function upload()
+    public function upload($debug=false)
     {
         $fn = $this->mp3_file->getFilename();
         
         $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
         $command = sprintf(
-            'curl --http-1.1 -v -# -F mp3=@\"%s\" -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
+            'curl --http1.1 -v -# -F mp3=@\"%s\" -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
             escapeshellarg($fn),
             escapeshellarg($this->picture),
             escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
@@ -833,9 +833,12 @@ class MixcloudClient
         );
         
         echo "***\n";
-        // echo "upload with:\n\n". $command . "\n";
-        passthru($command);
-        echo "\n*** DONE UPLOADING ***\n";
+        if($debug) {   
+            echo "upload with:\n\n". $command . "\n";
+        } else {
+            passthru($command);
+            echo "\n*** DONE UPLOADING ***\n";
+        }
     }
     
     public function getTagsArgs()
