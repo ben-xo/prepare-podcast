@@ -124,8 +124,12 @@ class PreparePodcast
         $image_dir = $this->image_dir;
         
         try {
+            
+            $optind = 0;
+            $cli_options = getopt('', array('renumber', 'debug', 'no-mixcloud'), $optind);
+            
 
-            if(isset($argv[1]) and $argv[1] == '--renumber')
+            if($cli_options and isset($cli_options['renumber']))
             {
                 return $this->renumber();
             }
@@ -138,19 +142,19 @@ class PreparePodcast
             if(!is_dir($image_dir) || !is_readable($image_dir))
                 throw new RuntimeException('Image dir not set correctly in ' . $argv[0]);
                         
-            if(empty($argv[1])) 
+            if(empty($argv[$optind])) 
                 throw new InvalidArgumentException('No show specified.');
                 
-            $show = $argv[1];
+            $show = $argv[$optind];
             if(!isset($config[$show]))
                 throw new InvalidArgumentException('Unknown show \'' . $show . '\'. Only know about ' . implode(', ', array_keys($config)));
                 
-            if(empty($argv[2])) 
+            if(empty($argv[$optind+1])) 
                 throw new InvalidArgumentException('No MP3 specified.');
                 
-            $mp3_file_name = $argv[2];
+            $mp3_file_name = $argv[$optind+1];
 
-            if(isset($argv[3]) and $argv[3] == '--debug')
+            if($cli_options and isset($cli_options['debug']))
             {
                 $config['debug'] = true;
             }
@@ -171,7 +175,7 @@ class PreparePodcast
                 $image_file = false;
             }
             
-            if($config[$show]['mixcloud'])
+            if($config[$show]['mixcloud'] && !($cli_options and isset($cli_options['no-mixcloud'])))
             {
                 $mixcloud_json = file_get_contents(getenv('HOME') . '/.prepare-podcast-mixcloud.json');
                 if($mixcloud_json)
@@ -217,7 +221,7 @@ class PreparePodcast
             $this->out("Writing info to file...\n");
             $mp3_file->applyID3($config['debug']);
             
-            if($config[$show]['mixcloud'])
+            if($config[$show]['mixcloud'] && !($cli_options and isset($cli_options['no-mixcloud'])))
             {
                 $mixcloud = new MixcloudClient(
                     $config[$show],
@@ -240,7 +244,7 @@ class PreparePodcast
     
     protected function usage($cmd)
     {
-        $this->out( "Usage: $cmd <show> <filename>\n" );
+        $this->out( "Usage: $cmd [--debug] [--no-mixcloud] <show> <filename>\n" );
         $this->out( "       $cmd --renumber\n" );
     }
 
