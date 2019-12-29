@@ -224,7 +224,7 @@ class PreparePodcast
                     $this->image_dir . '/' . $config[$show]['image']
                 );
                 $mixcloud->setMP3File($mp3_file);
-                $mixcloud->upload($config['debug_backtrace()']);
+                $mixcloud->upload($config['debug']);
             }
             
         
