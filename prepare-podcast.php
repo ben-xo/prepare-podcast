@@ -368,7 +368,7 @@ class Track implements Editable
         
     protected function normaliseTitle($t) {
         return preg_replace(
-            array( '/ - (.+)$/', '/ \(Original Mix\)/i' ),
+            array( '/ - (.+)$/', '/\s+(\(Original( Mix)?\)|- Original( Mix)?)$/i' ),
             array( ' ($1)',      '' ),
             $t
         );
