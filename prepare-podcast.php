@@ -921,11 +921,12 @@ class BassdriveFilenameProcessor implements FilenameProcessor
 {
     public function rename($filename)
     {
-        if(preg_match('/(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-\d{6}-(?<showname>(?<artist>(?:[A-Z0-9][a-zA-Z0-9]*_)+[A-Z0-9][a-zA-Z0-9]+)_LIVE_(?<title>(?:[A-Z0-9][a-zA-Z0-9]*_)+[A-Z0-9][a-zA-Z0-9]+))/', $filename, $matches))
+        if(preg_match('/(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-\d{6}-(?<showname>(?<artist>(?:[A-Z0-9][a-zA-Z0-9]*_)*[A-Z0-9][a-zA-Z0-9]+)_LIVE_(?<title>(?:[A-Z0-9][a-zA-Z0-9]*(?:_s)?_)*[A-Z0-9][a-zA-Z0-9]+)(?:_s)?)/', $filename, $matches))
         {
             $date = join('-', array($matches['year'], $matches['month'], $matches['day']));
             $artist = preg_replace('/_/', ' ', $matches['artist']);
             $title = preg_replace('/_/', ' ', $matches['title']);
+            $title = preg_replace('/\b s\b/', "'s", $title);
             $new_filename = "$artist - $title ($date).mp3";
             echo "\n** About to rename $filename to $new_filename. **\n";
             echo "Ctrl-C now if this is wrong\n";
