@@ -52,7 +52,8 @@ $config = array(
         'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
         'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPOSURE Show on http://www.bassdrive.com every Tuesday, 9-11pm GMT since 2001.",
         'date_offset' => 0,
-        'mixcloud' => true
+        'mixcloud' => true,
+        'filename_processor' => 'BassdriveFilenameProcessor'
     ),
     'di.fm' => array(
         'image' => 'xpression-session-600.jpg',
@@ -80,6 +81,11 @@ interface Editable
 {
     public function asText();
     public function fromText($text);
+}
+
+interface FilenameProcessor
+{
+    public function rename($filename);
 }
 
 /*** Classes ***/
@@ -186,6 +192,12 @@ class PreparePodcast
                 {
                     throw RuntimeException('Mixcloud configuration missing');
                 }
+            }
+
+            if(!empty($config[$show]['filename_processor'])) {
+                /** @var FilenameProcessor */
+                $filename_processor = new $config[$show]['filename_processor']();
+                $mp3_file_name = $filename_processor->rename($mp3_file_name);
             }
             
             $mp3_file = new MP3File($mp3_file_name);
@@ -903,6 +915,31 @@ class MixcloudClient
         return $publish_date->setTime(9, 0)->format('Y-m-d\TH:i:s\Z');
     }
 
+}
+
+class BassdriveFilenameProcessor implements FilenameProcessor
+{
+    public function rename($filename)
+    {
+        if(preg_match('/(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})-\d{6}-(?<showname>(?<artist>(?:[A-Z0-9][a-zA-Z0-9]*_)+[A-Z0-9][a-zA-Z0-9]+)_LIVE_(?<title>(?:[A-Z0-9][a-zA-Z0-9]*_)+[A-Z0-9][a-zA-Z0-9]+))/', $filename, $matches))
+        {
+            $date = join('-', array($matches['year'], $matches['month'], $matches['day']));
+            $artist = preg_replace('/_/', ' ', $matches['artist']);
+            $title = preg_replace('/_/', ' ', $matches['title']);
+            $new_filename = "$artist - $title ($date).mp3";
+            echo "\n** About to rename $filename to $new_filename. **\n";
+            echo "Ctrl-C now if this is wrong\n";
+            sleep(3);
+            echo "Continuing…\n";
+            if(rename($filename, $new_filename))
+            {
+                return $new_filename;
+            }
+            throw new Exception("Failed to rename $filename to $new_filename");
+            
+        }
+        return $filename;
+    }
 }
 
 /*** App ***/
