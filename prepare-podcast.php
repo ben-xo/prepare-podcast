@@ -46,7 +46,7 @@ $image_dir = '/Users/ben/Pictures';
 
 $config = array(
     'bassdrive' => array(
-        'image' => 'xposure-cover-squake.jpg',
+        'image' => 'ben xo xposure show cover 2021.jpg',
         'album' => 'http://www.bassdrive.com/',
         'genre' => 'Drum & Bass',
         'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
@@ -123,6 +123,9 @@ class PreparePodcast
     
     public function main($argc, array $argv)
     {
+        if(getenv('NO_MAIN') == "1")
+            return;
+        
         date_default_timezone_set('UTC');
         
         $config = $this->config;
@@ -517,6 +520,7 @@ class SeratoCSVIterator implements Iterator
     /**
      * @return Track
      */
+    #[\ReturnTypeWillChange]
     public function current()
     {
         $row = $this->rows[$this->ptr];
@@ -527,21 +531,25 @@ class SeratoCSVIterator implements Iterator
         return $t;
     }
     
+    #[\ReturnTypeWillChange]
     public function key()
     {
         return $this->ptr + 1; // tracklists are 1-based
     }
     
+    #[\ReturnTypeWillChange]
     public function next()
     {
         $this->ptr++;       
     }
     
+    #[\ReturnTypeWillChange]
     public function rewind()
     {
         $this->ptr = 0;
     }
     
+    #[\ReturnTypeWillChange]
     public function valid()
     { 
         return isset($this->rows[$this->ptr]);
@@ -717,9 +725,16 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            'min=1.5,th=-24',
+            'min=1.5,th=-48',
             $this->getFilename()
         );
+
+        // $args = array(
+        //     'cp',
+        //     '-v',
+        //     $this->getFilename(),
+        //     $this->getBasename('.mp3') . '_trimmed.mp3'
+        // );
 
         if($debug)
         {
