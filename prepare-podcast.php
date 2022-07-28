@@ -49,7 +49,7 @@ $config = array(
         'image' => 'ben xo xposure show cover 2021.jpg',
         'album' => 'http://www.bassdrive.com/',
         'genre' => 'Drum & Bass',
-        'tags' => array('drum & bass', 'dnb', 'neurofunk', 'liquid', 'jump up'),
+        'tags' => array('drum and bass', 'neurofunk', 'liquid drum and bass', 'neurofunk', 'jump up drum and bass'),
         'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPOSURE Show on http://www.bassdrive.com every Tuesday, 9-11pm GMT since 2001.",
         'date_offset' => 0,
         'mixcloud' => true,
@@ -725,7 +725,7 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            'min=1.5,th=-48',
+            'min=1.5,th=-24',
             $this->getFilename()
         );
 
