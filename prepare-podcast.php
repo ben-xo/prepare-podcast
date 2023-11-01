@@ -2,7 +2,7 @@
 <?php
 
 /******************************************************************************
- * Copyright (c) 2010, Ben XO (me@ben-xo.com).
+ * Copyright (c) 2010-2023, Ben XO (https://github.com/ben-xo)
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -30,8 +30,7 @@
  * 
  * *PLEASE NOTE* This tool relies on the following external tools:
  * 
- * * eyeD3 0.6.18 from http://eyed3.nicfit.net/
- *   (Right now it must be exactly that version. 0.7 and up don't work)
+ * * eyeD3 from http://eyed3.nicfit.net/
  *
  * * mp3splt from http://mp3splt.sourceforge.net/
  *   
@@ -46,10 +45,10 @@ $image_dir = '/Users/ben/Pictures';
 
 $config = array(
     'bassdrive' => array(
-        'image' => 'ben xo xposure show cover 2021.jpg',
+        'image' => 'ben xo dj profile.jpg',
         'album' => 'http://www.bassdrive.com/',
         'genre' => 'Drum & Bass',
-        'tags' => array('drum and bass', 'neurofunk', 'liquid drum and bass', 'neurofunk', 'jump up drum and bass'),
+        'tags' => array('drum and bass', 'neurofunk', 'liquid drum and bass', 'techstep', 'jump up drum and bass'),
         'description' => "This show aired on :date: mixed by :artist:\n\nBen XO presents the XPOSURE Show on http://www.bassdrive.com every Tuesday, 9-11pm GMT since 2001.",
         'date_offset' => 0,
         'mixcloud' => true,
@@ -765,12 +764,11 @@ class MP3File extends AFile
     {
         // NOTE: THIS ORDERING IS VERY SPECIFIC!
         $args = array (
-            'eyed3_script',
+            'eyeD3',
             '--to-v2.3', // this keeps iTunes and id3v2 happy.
-            '--set-encoding=utf16-LE',
-            '--itunes', // eyeD3 0.6.18 only (0.7 and above don't work with this script yet)
-            '--year=' . $this->year,
-            '--comment=::' . $this->tracklist->asText(),
+            '--encoding=utf16',
+            '--release-year=' . $this->year,
+            '--add-comment=' . $this->tracklist->asText(). "::",
             '--title=' . $this->title,
             '--artist=' . $this->artist,
             '--album=' . $this->album,
@@ -798,7 +796,7 @@ class MP3File extends AFile
         {
             // Now do the image as a second step, otherwise it seems to screw up and come up blank in iTunes :/
             $args = array (
-                'eyed3_script',
+                'eyeD3',
                 '--add-image=' . $this->image . ':OTHER',
                 $this->getFilename()
             );
