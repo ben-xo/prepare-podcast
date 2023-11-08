@@ -159,7 +159,7 @@ class PreparePodcast
                 
             if(empty($argv[$optind+1])) 
                 throw new InvalidArgumentException('No MP3 specified.');
-                
+
             $mp3_file_name = $argv[$optind+1];
 
             if($cli_options and isset($cli_options['debug']))
@@ -173,10 +173,16 @@ class PreparePodcast
             
             if($config[$show]['image'] !== false)
             {
-                $image_file = $image_dir . '/' . $config[$show]['image'];
-        
-                if(!is_file($image_file) || !is_readable($image_file))
-                    throw new RuntimeException('Can\'t read image file ' . $image_file);
+                if(!empty($argv[$optind+2]))
+                {
+                    $image_file = $argv[$optind+2];
+                }
+                else
+                {
+                    $image_file = $image_dir . '/' . $config[$show]['image'];
+                    if(!is_file($image_file) || !is_readable($image_file))
+                        throw new RuntimeException('Can\'t read image file ' . $image_file);
+                }
             }
             else
             {
@@ -258,7 +264,7 @@ class PreparePodcast
     
     protected function usage($cmd)
     {
-        $this->out( "Usage: $cmd [--debug] [--no-mixcloud] <show> <filename>\n" );
+        $this->out( "Usage: $cmd [--debug] [--no-mixcloud] <show> <filename> [<image filename>]\n" );
         $this->out( "       $cmd --renumber\n" );
     }
 
