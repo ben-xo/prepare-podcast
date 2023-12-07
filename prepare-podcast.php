@@ -180,9 +180,9 @@ class PreparePodcast
                 else
                 {
                     $image_file = $image_dir . '/' . $config[$show]['image'];
-                    if(!is_file($image_file) || !is_readable($image_file))
-                        throw new RuntimeException('Can\'t read image file ' . $image_file);
                 }
+                if(!is_file($image_file) || !is_readable($image_file))
+                    throw new RuntimeException('Can\'t read image file ' . $image_file);
             }
             else
             {
@@ -730,7 +730,7 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            'min=1.5,th=-24',
+            'min=2.0,th=-24',
             $this->getFilename()
         );
 
@@ -774,11 +774,11 @@ class MP3File extends AFile
             '--to-v2.3', // this keeps iTunes and id3v2 happy.
             '--encoding=utf16',
             '--release-year=' . $this->year,
-            '--add-comment=' . $this->tracklist->asText(). "::",
             '--title=' . $this->title,
             '--artist=' . $this->artist,
             '--album=' . $this->album,
-            '--genre=' . $this->genre
+            '--genre=' . $this->genre,
+            '--comment=' . $this->tracklist->asText()
         );
         
         //if($this->image) $args[] = '--add-image=' . $this->image . ':OTHER';
@@ -803,6 +803,8 @@ class MP3File extends AFile
             // Now do the image as a second step, otherwise it seems to screw up and come up blank in iTunes :/
             $args = array (
                 'eyeD3',
+                '--to-v2.3', // this keeps iTunes and id3v2 happy.
+                '--encoding=utf16',
                 '--add-image=' . $this->image . ':OTHER',
                 $this->getFilename()
             );
