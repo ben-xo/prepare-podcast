@@ -730,7 +730,7 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            'min=2.0,th=-24',  # try -12 if if it splits too early
+            'min=2.0,th=-12',  # try -12 if if it splits too early
             $this->getFilename()
         );
 
@@ -756,7 +756,7 @@ class MP3File extends AFile
 
             $filesize_ratio = filesize($filename_trim) / filesize($filename);
             if($filesize_ratio < 0.95)
-                throw new RuntimeException("mp3splt error: trimmed file <95% size of original - ratio {$filesize_ratio} ???");
+                throw new RuntimeException("mp3splt error: trimmed file <95% size of original - ratio {$filesize_ratio} ??? - Try changing mp3splt threshold in code");
 
             $retval = rename($filename, $filename_orig);
             if(false === $retval) throw new RuntimeException('Renaming untrimmed file failed');
