@@ -245,7 +245,7 @@ class PreparePodcast
             {
                 $mixcloud = new MixcloudClient(
                     $config[$show],
-                    $this->image_dir . '/' . $config[$show]['image']
+                    $image_file
                 );
                 $mixcloud->setMP3File($mp3_file);
                 $mixcloud->upload($config['debug']);
@@ -730,7 +730,7 @@ class MP3File extends AFile
             'mp3splt',
             '-r',
             '-p',
-            'min=2.0,th=-24',
+            'min=2.0,th=-24',  # try -12 if if it splits too early
             $this->getFilename()
         );
 
@@ -858,7 +858,7 @@ class MixcloudClient
         
         $url = 'https://api.mixcloud.com/upload/?access_token=' . $this->access_token;
         $command = sprintf(
-            'curl --http1.1 -v -# -F mp3=@\"%s\" -F picture=@%s -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
+            'curl --http1.1 -v -# -F mp3=@\"%s\" -F picture=@\"%s\" -F "name="%s %s %s -F "publish_date="%s -F "description="%s %s | tee',
             escapeshellarg($fn),
             escapeshellarg($this->picture),
             escapeshellarg($this->mp3_file->getArtist() . ' - ' . $this->mp3_file->getTitle()),
