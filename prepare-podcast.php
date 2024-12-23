@@ -574,12 +574,12 @@ class SeratoCSVIterator implements Iterator
         if(!$fh) 
             throw new InvalidArgumentException("Could not open file '$filename'");
 
-        $this->configureFromHeader(fgetcsv($fh));
+        $this->configureFromHeader(fgetcsv($fh, $escape=""));
 
-        fgetcsv($fh);
+        fgetcsv($fh, $escape="");
         while(!feof($fh))
         {
-            $row = fgetcsv($fh);
+            $row = fgetcsv($fh, $escape="");
             if(!empty($row)) $this->rows[] = $row;
         }
 
