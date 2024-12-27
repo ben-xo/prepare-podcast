@@ -568,18 +568,23 @@ class SeratoCSVIterator implements Iterator
         }
     }
     
+    public function fgetcsv($fh)
+    {
+        return fgetcsv($fh, null, ',', '"', "");
+    }
+
     public function parseFromFile($filename)
     {
         $fh = fopen($filename, 'r');
         if(!$fh) 
             throw new InvalidArgumentException("Could not open file '$filename'");
 
-        $this->configureFromHeader(fgetcsv($fh, $escape=""));
+        $this->configureFromHeader($this->fgetcsv($fh));
 
-        fgetcsv($fh, $escape="");
+        $this->fgetcsv($fh); // skip the second row
         while(!feof($fh))
         {
-            $row = fgetcsv($fh, $escape="");
+            $row = $this->fgetcsv($fh);
             if(!empty($row)) $this->rows[] = $row;
         }
 
